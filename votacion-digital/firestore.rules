@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Candidatos: lectura pública. Solo se permite sumar exactamente 1 voto,
+    // y únicamente junto con la creación del voto del mismo usuario.
+    // Crear o borrar candidatos solo se hace con credenciales de administrador.
+    match /candidates/{id} {
+      allow read: if true;
+      allow create, delete: if false;
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+        && request.resource.data.votes == resource.data.votes + 1
+        && !exists(/databases/$(database)/documents/votes/$(request.auth.uid))
+        && existsAfter(/databases/$(database)/documents/votes/$(request.auth.uid))
+        && getAfter(/databases/$(database)/documents/votes/$(request.auth.uid)).data.candidateId == id;
+    }
+
+    // Votos: el ID del documento es el UID del votante, así que solo puede
+    // existir un voto por persona. Solo el dueño puede leer su voto.
+    match /votes/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow update, delete: if false;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['candidateId', 'createdAt'])
+        && request.resource.data.candidateId is string
+        && exists(/databases/$(database)/documents/candidates/$(request.resource.data.candidateId))
+        && request.resource.data.createdAt == request.time;
+    }
+  }
+}

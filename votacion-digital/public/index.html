@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Votación digital</title>
+<style>
+  :root { --bg:#f6f7fb; --card:#fff; --text:#1c1f2a; --muted:#6a7085; --brand:#3b5bdb; --ok:#2f9e44; --err:#c92a2a; --line:#e3e6ef; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14161d; --card:#1e212b; --text:#eceef5; --muted:#9aa0b5; --brand:#748ffc; --line:#2e3240; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:560px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  .muted { color:var(--muted); font-size:.9rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:16px; }
+  input { width:100%; padding:12px; margin:6px 0; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); font-size:1rem; }
+  button { padding:11px 16px; border:0; border-radius:8px; background:var(--brand); color:#fff; font-size:1rem; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--brand); border:1px solid var(--line); }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+  .cand { padding:12px 0; border-top:1px solid var(--line); }
+  .cand:first-child { border-top:0; }
+  .bar { height:8px; background:var(--line); border-radius:4px; margin-top:8px; overflow:hidden; }
+  .bar > i { display:block; height:100%; background:var(--brand); transition:width .3s; }
+  #msg { margin-top:12px; min-height:1.4em; font-size:.95rem; }
+  .err { color:var(--err); } .ok { color:var(--ok); }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Votación digital</h1>
+  <p class="muted">Una persona, un voto. Los resultados se actualizan en vivo.</p>
+
+  <section id="auth" class="card" hidden>
+    <strong>Ingresa para votar</strong>
+    <input id="email" type="email" placeholder="Correo electrónico" autocomplete="email">
+    <input id="pass" type="password" placeholder="Contraseña (mínimo 6 caracteres)" autocomplete="current-password">
+    <div class="row">
+      <button id="btn-login">Ingresar</button>
+      <button id="btn-signup" class="ghost">Crear cuenta</button>
+    </div>
+  </section>
+
+  <section id="session" class="card row" hidden>
+    <span id="who" class="muted"></span>
+    <button id="btn-logout" class="ghost">Salir</button>
+  </section>
+
+  <section class="card">
+    <strong>Candidatos</strong>
+    <div id="list" class="muted">Cargando…</div>
+  </section>
+
+  <div id="msg" role="status"></div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, doc, getDoc, writeBatch, increment, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// La apiKey web de Firebase es pública por diseño; la seguridad la dan las reglas de Firestore.
+const app = initializeApp({
+  apiKey: "AIzaSyAKeKQN1Tkxug9RBa3XN82IlsQSLcjB8ig",
+  authDomain: "votacion-digital.firebaseapp.com",
+  projectId: "votacion-digital",
+  storageBucket: "votacion-digital.firebasestorage.app",
+  messagingSenderId: "238878761032",
+  appId: "1:238878761032:web:1d895399a8e00c61bb387d"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+let user = null, myVote = null, candidates = [];
+
+function say(text, cls = "") { const m = $("msg"); m.textContent = text; m.className = cls; }
+
+function render() {
+  const list = $("list");
+  list.textContent = "";
+  if (!candidates.length) { list.textContent = "Aún no hay candidatos registrados."; return; }
+  const total = candidates.reduce((s, c) => s + (c.votes || 0), 0);
+  for (const c of candidates) {
+    const pct = total ? Math.round(((c.votes || 0) / total) * 100) : 0;
+    const row = document.createElement("div"); row.className = "cand";
+    const top = document.createElement("div"); top.className = "row";
+    const name = document.createElement("span");
+    name.textContent = c.name + (myVote === c.id ? "  ✓ tu voto" : "");
+    const right = document.createElement("span");
+    const count = document.createElement("span"); count.className = "muted";
+    count.textContent = `${c.votes || 0} votos (${pct}%)  `;
+    const btn = document.createElement("button");
+    btn.textContent = "Votar";
+    btn.disabled = !user || !!myVote;
+    btn.onclick = () => vote(c.id, btn);
+    right.append(count, btn);
+    top.append(name, right);
+    const bar = document.createElement("div"); bar.className = "bar";
+    const fill = document.createElement("i"); fill.style.width = pct + "%";
+    bar.append(fill);
+    row.append(top, bar);
+    list.append(row);
+  }
+}
+
+async function vote(candidateId, btn) {
+  btn.disabled = true;
+  try {
+    const batch = writeBatch(db);
+    batch.set(doc(db, "votes", user.uid), { candidateId, createdAt: serverTimestamp() });
+    batch.update(doc(db, "candidates", candidateId), { votes: increment(1) });
+    await batch.commit();
+    myVote = candidateId;
+    say("¡Tu voto fue registrado!", "ok");
+  } catch (e) {
+    say("No se pudo registrar el voto. ¿Ya votaste antes?", "err");
+  }
+  render();
+}
+
+onSnapshot(collection(db, "candidates"), (snap) => {
+  candidates = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => a.name.localeCompare(b.name));
+  render();
+}, () => say("No se pudieron cargar los candidatos.", "err"));
+
+onAuthStateChanged(auth, async (u) => {
+  user = u; myVote = null;
+  $("auth").hidden = !!u;
+  $("session").hidden = !u;
+  if (u) {
+    $("who").textContent = u.email;
+    try { const s = await getDoc(doc(db, "votes", u.uid)); if (s.exists()) myVote = s.data().candidateId; } catch {}
+    say(myVote ? "Ya votaste. ¡Gracias por participar!" : "");
+  } else { say(""); }
+  render();
+});
+
+const creds = () => [$("email").value.trim(), $("pass").value];
+const authError = (e) => say({
+  "auth/invalid-credential": "Correo o contraseña incorrectos.",
+  "auth/email-already-in-use": "Ese correo ya tiene una cuenta.",
+  "auth/weak-password": "La contraseña debe tener al menos 6 caracteres.",
+  "auth/invalid-email": "El correo no es válido."
+}[e.code] || "No se pudo completar la operación.", "err");
+
+$("btn-login").onclick = () => signInWithEmailAndPassword(auth, ...creds()).catch(authError);
+$("btn-signup").onclick = () => createUserWithEmailAndPassword(auth, ...creds()).catch(authError);
+$("btn-logout").onclick = () => signOut(auth);
+</script>
+</body>
+</html>

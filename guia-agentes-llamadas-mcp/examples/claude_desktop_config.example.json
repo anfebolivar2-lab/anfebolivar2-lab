@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "vapi-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.vapi.ai/mcp",
+        "--header",
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer REEMPLAZAR_POR_CLAVE_PRIVADA_VAPI"
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+private/
+receipts/
+logs/
+*.log
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+claude_desktop_config.json
+vapi-tunnel.yaml
+claude_desktop_config.local.json

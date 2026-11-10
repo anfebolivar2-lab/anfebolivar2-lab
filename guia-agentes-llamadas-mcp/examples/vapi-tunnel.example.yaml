@@ -1,0 +1,20 @@
+# Copia este archivo como vapi-tunnel.yaml y sustituye SOLO el tunnel_id.
+# Las claves se leen del entorno; no las escribas en este archivo.
+# Composición de configuraciones documentadas; no probada con cuentas reales.
+config_version: 1
+
+control_plane:
+  tunnel_id: tunnel_REEMPLAZAR
+  api_key: env:CONTROL_PLANE_API_KEY
+
+mcp:
+  server_urls:
+    - channel: main
+      url: https://mcp.vapi.ai/mcp
+  extra_headers:
+    Authorization: env:VAPI_AUTH_HEADER
+  discovery_extra_headers:
+    Authorization: env:VAPI_AUTH_HEADER
+
+health:
+  listen_addr: 127.0.0.1:8080

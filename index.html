@@ -253,6 +253,7 @@ tr:last-child td{border-bottom:0}
 .xbtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--red);font-size:14px;line-height:1;padding:0;flex:none}.xbtn:hover{background:var(--red-soft);border-color:var(--red)}
 .cline{grid-template-columns:1fr auto auto auto}
 .wm{font-size:22px;letter-spacing:.1em}
+.pfv{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.pfv .chk{margin:5px 0}
 @media print{
   body.pr-receipt>*:not(.ov){display:none!important}
   body.pr-receipt .ov{position:static;background:none;padding:0;display:block}
@@ -434,7 +435,7 @@ function seed(){
   return {id:"V-"+pad(n,6),ts:t-mins*60000,items:its,sub:s,disc:0,total:s,pay:pay,acct:acct,recv:rc,change:rc-cash,cash:cash,tr:tr,by:by,uid:uid,cust:{n:"",tel:""},void:false,ex:1}}
  var sales=[];
  return {items:items,sales:sales,seq:1,idseq:17,shifts:[],expenses:[],eseq:1000,
-  users:[{id:1,name:"Andrés",role:"Administrador",pin:"1234"},{id:2,name:"Marcela",role:"Secretaria",pin:"2222"},{id:3,name:"Carlos",role:"Trabajador",pin:"1111"},{id:4,name:"María",role:"Administrador",pin:"4321"}],
+  users:[{id:4,name:"María",role:"Administrador",pin:"4321"}],
   settings:{store:"Tienda María",wa:"",maxd:10,theme:""},uid:5}}
 function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function pick(r,arr,wi){var s=0;arr.forEach(function(a){s+=a[wi]});var x=r()*s;for(var i=0;i<arr.length;i++){x-=arr[i][wi];if(x<=0)return arr[i]}return arr[arr.length-1]}
@@ -485,8 +486,8 @@ function day0(d){var x=new Date(d);x.setHours(0,0,0,0);return x.getTime()}
 function toast(m){var t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(function(){t.hidden=true},2600)}
 /* ---------- sesión ---------- */
 var cur=null,view="tienda",cat="Todos",pay="Efectivo",cart=[],selU=null;
-function can(v){return cur&&ACCESS[v].indexOf(cur.role)>=0}
-function mgr(){return cur&&cur.role!=="Trabajador"}
+function can(v){return cur&&canView(v)}
+function mgr(){return cur&&mgrOk()}
 function drawLogin(){$("ulist").innerHTML=S.users.map(function(u){return '<button class="urow" data-u="'+u.id+'" aria-pressed="'+(selU===u.id)+'"><span><b>'+esc(u.name)+'</b><br><small>'+esc(u.role)+'</small></span></button>'}).join("");
  $("lhint").textContent="Si es tu primera vez, pide tu PIN al administrador."}
 $("ulist").onclick=function(e){var b=e.target.closest("[data-u]");if(b){selU=Number(b.getAttribute("data-u"));drawLogin();$("pin").focus()}};
@@ -534,7 +535,7 @@ function drawPOS(){var c=["Todos"].concat(cats());if(c.indexOf(cat)<0)cat="Todos
  drawCartPanel();drawToday()}
 function totals(){var sub=0;cart.forEach(function(c){var x=find(c.id);if(x)sub+=lt(x,c.q)});
  var v=nm("dv"),tp=$("dtp").value,d=tp==="pct"?Math.round(sub*Math.min(v,100)/100):Math.min(v,sub),msg="";
- if(cur&&cur.role==="Trabajador"){var mx=Math.round(sub*S.settings.maxd/100);if(d>mx){d=mx;msg="Tu descuento máximo es "+S.settings.maxd+"% ("+cop(mx)+")."}}
+ if(cur&&!rolePerm("disc")){var mx=Math.round(sub*S.settings.maxd/100);if(d>mx){d=mx;msg="Tu descuento máximo es "+S.settings.maxd+"% ("+cop(mx)+")."}}
  $("dmsg").textContent=msg;return {sub:sub,disc:d,total:sub-d}}
 function payInfo(t){var tot=t.total;
  if(pay==="Efectivo"){var r=nm("recv");if(!cart.length||!r)return {ok:true,msg:"",cls:""};return r>=tot?{ok:true,msg:"Devuelta "+cop(r-tot),cls:"ok"}:{ok:false,msg:"Falta "+cop(tot-r),cls:"bad"}}
@@ -580,7 +581,7 @@ function drawToday(){var l=mySales(day0(Date.now())),tot=0;l.forEach(function(s)
  $("tcount").textContent=l.length;$("ttotal").textContent=cop(tot);
  $("tlist").innerHTML=l.length?l.map(saleRow).join(""):'<p class="empty">Aún no hay ventas hoy.</p>'}
 function saleRow(s){var sm=s.items.map(function(i){return i.q+"× "+esc(i.n)}).join(", ");
- return '<div class="srow'+(s.void?' void':'')+'"><div><span class="mono">'+s.id+'</span> '+fmtT(s.ts)+(s.ex?' <span class="tag ok">Ejemplo</span>':'')+(s.void?' <span class="tag">Anulada</span>':'')+'<small>'+sm+' · '+esc(payTxt(s))+' · '+esc(s.by)+'</small></div><div class="right"><span class="amt" style="font-size:14px">'+cop(s.total)+'</span><button class="btn sm" data-see="'+s.id+'">Ver</button>'+(cur&&cur.role==="Administrador"?'<button class="xbtn" data-sdel="'+s.id+'" aria-label="Eliminar venta '+s.id+'" title="Eliminar venta">✕</button>':'')+'</div></div>'}
+ return '<div class="srow'+(s.void?' void':'')+'"><div><span class="mono">'+s.id+'</span> '+fmtT(s.ts)+(s.ex?' <span class="tag ok">Ejemplo</span>':'')+(s.void?' <span class="tag">Anulada</span>':'')+'<small>'+sm+' · '+esc(payTxt(s))+' · '+esc(s.by)+'</small></div><div class="right"><span class="amt" style="font-size:14px">'+cop(s.total)+'</span><button class="btn sm" data-see="'+s.id+'">Ver</button>'+(cur&&rolePerm("del")?'<button class="xbtn" data-sdel="'+s.id+'" aria-label="Eliminar venta '+s.id+'" title="Eliminar venta">✕</button>':'')+'</div></div>'}
 document.addEventListener("click",function(e){var b=e.target.closest("[data-see]");if(b)receipt(b.getAttribute("data-see"))});
 /* ---------- recibo ---------- */
 function barcode(id){var x=0,h="";for(var i=0;i<id.length;i++){var c=id.charCodeAt(i);for(var j=0;j<3;j++){var w=((c>>j)&3)+1;h+='<rect x="'+x+'" y="0" width="'+w+'" height="46" fill="#111"/>';x+=w+((c+j)%2?2:1)}}
@@ -598,7 +599,7 @@ function receipt(id){var s=S.sales.filter(function(x){return x.id===id})[0];if(!
   (s.disc?'<div class="l"><span>Subtotal</span><span>'+cop(s.sub)+'</span></div><div class="l"><span>Descuento</span><span>−'+cop(s.disc)+'</span></div>':'')+'<hr><div class="big">'+cop(s.total)+'</div><hr>'+pays+
   '<div class="l"><span>Atendió</span><span>'+esc(s.by)+'</span></div>'+(s.cust&&s.cust.n?'<div class="l"><span>Cliente</span><span>'+esc(s.cust.n)+'</span></div>':'')+'<hr>'+barcode(s.id)+'<div class="c">¡GRACIAS POR SU COMPRA!</div></div>'+
   '<div class="rbtns"><a class="btn wa" target="_blank" rel="noopener" href="'+waLink(receiptText(s),s.cust&&s.cust.tel||"")+'">WhatsApp</a><button class="btn" id="rprint">Imprimir</button><button class="btn" id="rpdf">PDF</button></div>'+
-  (mgr()&&!s.void?'<button class="btn red sm" id="rvoid" data-id="'+s.id+'">Anular venta</button>':'')+(cur.role==="Administrador"?'<button class="btn red sm" id="rdel" data-id="'+s.id+'" style="margin-left:8px">Eliminar venta</button>':''))};
+  (mgr()&&!s.void?'<button class="btn red sm" id="rvoid" data-id="'+s.id+'">Anular venta</button>':'')+(rolePerm("del")?'<button class="btn red sm" id="rdel" data-id="'+s.id+'" style="margin-left:8px">Eliminar venta</button>':''))};
 document.addEventListener("click",function(e){
  if(e.target.id==="rprint"||e.target.id==="rpdf"){document.body.classList.add("pr-receipt");setTimeout(function(){window.print()},50);return}
  if(e.target.id==="rvoid"){var b=e.target;if(b.getAttribute("data-sure")){var s=S.sales.filter(function(x){return x.id===b.getAttribute("data-id")})[0];if(s&&!s.void){s.void=true;s.items.forEach(function(i){var x=find(i.id);if(x)x.stock+=i.q});save();closeModal();render();toast("Venta anulada. El stock volvió al inventario.")}}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro? Toca otra vez para anular"}}});
@@ -864,8 +865,8 @@ function testAI(){var c=$("ai-c").value.trim();S.settings.aiCode=c;save();$("ai-
 /* ---------- ajustes ---------- */
 function drawAjustes(){
  $("ajustesc").innerHTML='<div class="card"><div class="ch"><h2>Datos de la tienda</h2></div><div class="addf"><label>Nombre de la tienda<input id="g-n" value="'+esc(S.settings.store)+'"></label><label>WhatsApp del negocio (con indicativo)<input id="g-w" inputmode="numeric" value="'+esc(S.settings.wa)+'" placeholder="573001234567"></label><label>Descuento máximo del trabajador (%)<input id="g-d" type="text" inputmode="numeric" data-money="1" min="0" max="100" value="'+S.settings.maxd+'"></label></div><p class="hint" id="g-m"></p></div>'+
- aiCard()+'<div class="card users2"><div class="ch"><h2>Usuarios</h2></div><div class="tw"><table><thead><tr><th>Nombre</th><th>Rol</th><th>PIN</th><th></th></tr></thead><tbody>'+S.users.map(function(u){return '<tr><td>'+esc(u.name)+(u.id===cur.id?' <span class="tag ok">Tú</span>':'')+'</td><td>'+esc(u.role)+'</td><td><input type="text" inputmode="numeric" maxlength="8" value="'+esc(u.pin)+'" data-pin="'+u.id+'" style="width:100px" aria-label="PIN de '+esc(u.name)+'"></td><td class="n">'+(u.id===cur.id?'':'<button class="btn sm red" data-urm="'+u.id+'" aria-label="Eliminar usuario" title="Eliminar usuario">✕</button>')+'</td></tr>'}).join("")+'</tbody></table></div>'+
- '<form class="addf" id="uf"><label>Nombre<input id="u-n" required></label><label>Rol<select id="u-r"><option>Trabajador</option><option>Secretaria</option><option>Administrador</option></select></label><label>PIN (4 a 8 números)<input id="u-p" inputmode="numeric" maxlength="8" required></label><button class="btn acc" type="submit">Agregar usuario</button></form><p class="hint" id="u-m"></p></div>'+
+ aiCard()+profCard()+'<div class="card users2"><div class="ch"><h2>Usuarios</h2></div><div class="tw"><table><thead><tr><th>Nombre</th><th>Perfil</th><th>PIN</th><th></th></tr></thead><tbody>'+S.users.map(function(u){return '<tr><td>'+esc(u.name)+(u.id===cur.id?' <span class="tag ok">Tú</span>':'')+'</td><td>'+roleSel(u)+'</td><td><input type="text" inputmode="numeric" maxlength="8" value="'+esc(u.pin)+'" data-pin="'+u.id+'" style="width:100px" aria-label="PIN de '+esc(u.name)+'"></td><td class="n">'+(u.id===cur.id?'':'<button class="btn sm red" data-urm="'+u.id+'" aria-label="Eliminar usuario" title="Eliminar usuario">✕</button>')+'</td></tr>'}).join("")+'</tbody></table></div>'+
+ '<form class="addf" id="uf"><label>Nombre<input id="u-n" required></label><label>Perfil<select id="u-r">'+roleOpts("")+'</select></label><label>PIN (4 a 8 números)<input id="u-p" inputmode="numeric" maxlength="8" required></label><button class="btn acc" type="submit">Agregar usuario</button></form><p class="hint" id="u-m"></p></div>'+
  '<div class="card"><div class="ch"><h2>Permisos</h2></div><div class="tw"><table><thead><tr><th>Acción</th><th>Administrador</th><th>Secretaria</th><th>Trabajador</th></tr></thead><tbody>'+[["Vender y cobrar","Sí","Sí","Sí"],["Ver ventas de hoy","Todas","Todas","Solo las suyas"],["Crear, editar o eliminar productos","Sí","Sí","No"],["Registrar entrada de mercancía","Sí","Sí","No"],["Ver caja, ganancia e historial","Sí","Sí","No"],["Anular ventas","Sí","Sí","No"],["Registrar gastos","Sí","Sí","No"],["Usar el asistente","Sí","Sí","No"],["Usuarios y ajustes","Sí","No","No"]].map(function(r){return '<tr><td>'+r[0]+'</td>'+r.slice(1).map(function(c){return '<td style="color:'+(c==="No"?'var(--red)':'var(--green)')+';font-weight:600">'+c+'</td>'}).join("")+'</tr>'}).join("")+'</tbody></table></div><p class="hint">Estos permisos se aplican en esta página. Para que también los exija un servidor hace falta una base de datos con inicio de sesión.</p></div>'+
  '<div class="card"><div class="ch"><h2>Datos</h2></div><p class="hint" style="margin:0 0 10px">Todo se guarda solo en este navegador. Las ventas marcadas como Ejemplo son de muestra y no cuentan como reales.</p><div class="tools"><button class="btn" id="g-hload">Cargar ventas y gastos de ejemplo</button><button class="btn" id="g-hclear">Borrar ventas y gastos de ejemplo</button><button class="btn red" id="g-reset">Restaurar datos de ejemplo</button></div></div>'}
 $("ajustesc").onchange=function(e){var t=e.target;
@@ -908,10 +909,10 @@ function delModal(ids){var list=S.sales.filter(function(s){return ids.indexOf(s.
   list.forEach(function(s){if(back&&!s.void)s.items.forEach(function(i){var x=find(i.id);if(x)x.stock+=i.q})});
   S.sales=S.sales.filter(function(s){return ids.indexOf(s.id)<0});save();closeModal();render();toast(list.length===1?"Venta eliminada.":list.length+" ventas eliminadas.")}}
 document.addEventListener("click",function(e){
- if(e.target.id==="rdel"&&cur&&cur.role==="Administrador"){delModal([e.target.getAttribute("data-id")]);return}
- var sd=e.target.closest&&e.target.closest("[data-sdel]");if(sd&&cur&&cur.role==="Administrador"){delModal([sd.getAttribute("data-sdel")]);return}
+ if(e.target.id==="rdel"&&cur&&rolePerm("del")){delModal([e.target.getAttribute("data-id")]);return}
+ var sd=e.target.closest&&e.target.closest("[data-sdel]");if(sd&&cur&&rolePerm("del")){delModal([sd.getAttribute("data-sdel")]);return}
  var cx=e.target.closest&&e.target.closest("[data-cx]");if(cx){var id=Number(cx.getAttribute("data-cx"));cart=cart.filter(function(c){return c.id!==id});drawCartPanel();return}
- if(e.target.id==="hdelall"&&cur&&cur.role==="Administrador"){var l=histList();if(!l.length){toast("No hay ventas en la lista.");return}delModal(l.map(function(s){return s.id}))}});
+ if(e.target.id==="hdelall"&&cur&&rolePerm("del")){var l=histList();if(!l.length){toast("No hay ventas en la lista.");return}delModal(l.map(function(s){return s.id}))}});
 
 /* ---------- informes (datos para Excel y PDF) ---------- */
 var PAL=["#7a2f57","#e0a030","#2f8f83","#4a6fa5","#9a9aa5","#c4572e","#6a4c93","#3d9970"];
@@ -1090,13 +1091,49 @@ function addBars(){[["dashboard","dash"],["caja","caja"],["gastos","gastos"],["c
  var h=$("hxls");if(h&&!h.getAttribute("data-exp")){h.setAttribute("data-exp","xlsx");h.setAttribute("data-src","hist");h.textContent="Excel con gráficos";h.onclick=null;
   var p=$("hpdf");p.setAttribute("data-exp","pdf");p.setAttribute("data-src","hist");p.textContent="PDF con gráficos";p.onclick=null;
   if(!$("hdelall"))$("hprint").insertAdjacentHTML("afterend",'<button class="btn sm red" id="hdelall" hidden>Eliminar las ventas de esta lista</button>')}
- var dall=$("hdelall");if(dall)dall.hidden=!(cur&&cur.role==="Administrador");
+ var dall=$("hdelall");if(dall)dall.hidden=!(cur&&rolePerm("del"));
  var x=$("xls");if(x&&!x.getAttribute("data-exp")){x.setAttribute("data-exp","xlsx");x.setAttribute("data-src","inv");x.textContent="Excel con gráficos";x.onclick=null;x.insertAdjacentHTML("afterend",'<button class="btn sm" data-exp="pdf" data-src="inv" style="margin-left:6px">PDF con gráficos</button>')}}
 function brand(){Array.prototype.forEach.call(document.querySelectorAll(".wm"),function(w){if(w.firstChild)w.firstChild.nodeValue=S.settings.store});document.title=S.settings.store}
 if(!S.settings.clean1){S.sales=[];S.expenses=[];S.shifts=[];S.seq=1;S.eseq=1000;S.settings.clean1=1;save()}
 if(S.settings.store==="Tienda Altiplano"){S.settings.store="Tienda María";save()}
 brand();
 var _render=render;render=function(){_render();addBars();brand()};
+
+/* ---------- perfiles y permisos ---------- */
+var ALLV=["tienda","dashboard","inventario","gastos","caja","historial","calendario","asistente","turnos","ajustes"];
+function ensureRoles(){if(!S.roles){S.roles=[{name:"Secretaria",views:ALLV.filter(function(v){return v!=="ajustes"}),del:false,disc:true},{name:"Trabajador",views:["tienda","turnos"],del:false,disc:false}];save()}}
+function roleOf(u){u=u||cur;if(!u)return {views:[]};ensureRoles();if(u.role==="Administrador")return {name:"Administrador",views:ALLV,del:true,disc:true,fixed:1};
+ return S.roles.filter(function(r){return r.name===u.role})[0]||{name:u.role,views:["tienda"],del:false,disc:false}}
+function rolePerm(k){var r=roleOf();return !!(cur&&r&&r[k])}
+function canView(v){return roleOf().views.indexOf(v)>=0}
+function mgrOk(){return canView("inventario")||canView("gastos")||canView("caja")}
+function allRoles(){ensureRoles();return ["Administrador"].concat(S.roles.map(function(r){return r.name}))}
+function roleOpts(sel){return allRoles().map(function(n){return '<option'+(n===sel?' selected':'')+'>'+esc(n)+'</option>'}).join("")}
+function roleSel(u){var admins=S.users.filter(function(x){return x.role==="Administrador"}).length;
+ return '<select data-urole="'+u.id+'" aria-label="Perfil de '+esc(u.name)+'" style="width:auto"'+(u.role==="Administrador"&&admins<2?' disabled':'')+'>'+roleOpts(u.role)+'</select>'}
+function profCard(){ensureRoles();var rows=[{name:"Administrador",views:ALLV,del:true,disc:true,fixed:1}].concat(S.roles);
+ return '<div class="card"><div class="ch"><h2>Perfiles y permisos</h2><button class="btn sm acc" id="pf-new">+ Crear perfil</button></div><p class="hint" style="margin-top:0">Crea los perfiles que necesites (secretaria, vendedor, bodega...) y marca a qué secciones puede entrar cada uno. Después asígnalos a tus usuarios en la tabla de abajo.</p><div class="tw"><table><thead><tr><th>Perfil</th><th>Puede entrar a</th><th></th></tr></thead><tbody>'+
+  rows.map(function(r){return '<tr><td><b>'+esc(r.name)+'</b></td><td>'+(r.fixed?'Todo el sistema':esc(r.views.filter(function(v){return VIEWS[v]}).map(function(v){return VIEWS[v]}).join(", "))+(r.del?' · Eliminar ventas':'')+(r.disc?'':' · Descuento limitado'))+'</td><td class="n">'+(r.fixed?'':'<button class="btn sm" data-pedit="'+esc(r.name)+'">Editar</button> <button class="xbtn" data-prm="'+esc(r.name)+'" aria-label="Eliminar perfil" title="Eliminar perfil">✕</button>')+'</td></tr>'}).join("")+'</tbody></table></div></div>'}
+function profModal(old){ensureRoles();var r=old?S.roles.filter(function(x){return x.name===old})[0]:null;if(old&&!r)return;r=r||{name:"",views:["tienda"],del:false,disc:false};
+ modal('<div class="mh"><h3>'+(old?'Editar perfil':'Crear perfil')+'</h3><button class="x" data-close aria-label="Cerrar">×</button></div><label>Nombre del perfil<input id="pf-n" value="'+esc(r.name)+'" placeholder="Ej. Secretaria, Vendedor, Bodega" maxlength="30"></label><p class="hint" style="margin:10px 0 4px">Puede entrar a:</p><div class="pfv">'+
+  ALLV.map(function(v){return '<label class="chk"><input type="checkbox" data-pv="'+v+'"'+(r.views.indexOf(v)>=0?' checked':'')+'> '+VIEWS[v]+'</label>'}).join("")+'</div><label class="chk"><input type="checkbox" id="pf-del"'+(r.del?' checked':'')+'> Puede eliminar ventas</label><label class="chk"><input type="checkbox" id="pf-disc"'+(r.disc?' checked':'')+'> Puede dar descuentos sin límite</label><p class="err" id="pf-e"></p><div class="grid2"><button class="btn acc" id="pf-ok">Guardar</button><button class="btn" data-close>Cancelar</button></div>');
+ $("pf-ok").onclick=function(){var n=$("pf-n").value.trim(),v=Array.prototype.filter.call(document.querySelectorAll("[data-pv]"),function(c){return c.checked}).map(function(c){return c.getAttribute("data-pv")});
+  if(!n){$("pf-e").textContent="Escribe el nombre del perfil.";return}
+  if(norm(n)==="administrador"||S.roles.some(function(x){return norm(x.name)===norm(n)&&x.name!==old})){$("pf-e").textContent="Ya existe un perfil con ese nombre.";return}
+  if(!v.length){$("pf-e").textContent="Marca al menos una sección.";return}
+  var o={name:n,views:v,del:$("pf-del").checked,disc:$("pf-disc").checked};
+  if(old){S.roles=S.roles.map(function(x){return x.name===old?o:x});S.users.forEach(function(u){if(u.role===old)u.role=n})}else S.roles.push(o);
+  save();closeModal();drawAjustes();toast("Perfil "+n+" guardado.")}}
+document.addEventListener("click",function(e){var t=e.target;
+ if(t.id==="pf-new"){profModal(null);return}
+ var ed=t.closest&&t.closest("[data-pedit]");if(ed){profModal(ed.getAttribute("data-pedit"));return}
+ var rm=t.closest&&t.closest("[data-prm]");if(rm){var nm2=rm.getAttribute("data-prm");
+  if(S.users.some(function(u){return u.role===nm2})){toast("Hay usuarios con ese perfil. Cámbialos de perfil primero.");return}
+  if(rm.getAttribute("data-sure")){S.roles=S.roles.filter(function(x){return x.name!==nm2});save();drawAjustes()}else{rm.setAttribute("data-sure","1");rm.textContent="¿Seguro?"}}});
+document.addEventListener("change",function(e){var s=e.target;if(!s.getAttribute||s.getAttribute("data-urole")===null)return;var u=S.users.filter(function(x){return String(x.id)===s.getAttribute("data-urole")})[0];if(!u)return;
+ u.role=s.value;save();if(cur&&u.id===cur.id){cur=u;start()}else drawAjustes();toast("Perfil de "+u.name+": "+u.role)});
+/* un solo usuario: María */
+if(!S.settings.clean2){var maria=S.users.filter(function(u){return u.name==="María"})[0]||{id:S.uid||5,name:"María",role:"Administrador",pin:"4321"};maria.role="Administrador";S.users=[maria];S.uid=Math.max(S.uid||1,maria.id+1);S.settings.clean2=1;save()}
 
 applyTheme();
 var sid=null;try{sid=Number(localStorage.getItem(SES))}catch(e){}

@@ -296,6 +296,16 @@ tr:last-child td{border-bottom:0}
 .cline{grid-template-columns:1fr auto auto auto}
 .wm{font-size:22px;letter-spacing:.1em}
 .pfv{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.pfv .chk{margin:5px 0}
+.pform{display:flex!important;flex-direction:column;gap:14px}
+.pstep{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.pstep h3{margin:0;font-family:var(--display);font-weight:400;font-size:18px;display:flex;align-items:center;gap:10px}
+.pstep h3 span{width:26px;height:26px;border-radius:50%;background:var(--acc);color:var(--on-acc);display:grid;place-items:center;font-size:13px;font-family:var(--sans);font-weight:600;flex:none}
+.ex{color:var(--muted);font-size:12px;line-height:1.35}
+.live{margin:0;color:var(--acc-ink);background:var(--acc-soft);border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:500}.live:empty{display:none}
+.pmore{border:1px dashed var(--line);border-radius:12px;padding:10px 14px}.pmore summary{cursor:pointer;color:var(--acc-ink);font-weight:600;font-size:13.5px}.pmore label{margin-top:10px}
+.mbox{max-height:92vh;overflow-y:auto}
+.notibox{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.notibox p{margin:0;font-size:13.5px;flex:1;min-width:200px}
+.pform{align-items:stretch!important}.pform>*{width:100%}
 .bnav{display:none}
 @media (max-width:900px){
   .app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
@@ -488,19 +498,32 @@ html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
         <div class="stats" id="istats"></div>
         <div class="card" style="margin-top:16px">
           <div class="ch"><h2>Agregar producto</h2></div>
-          <form class="addf" id="addf">
-            <label>Nombre<input id="a-n" type="text" placeholder="Ej. Café Huila 340 g" required></label>
-            <label>Categoría<input id="a-c" type="text" list="cats" placeholder="Café, Cerámica..." required></label>
-            <label>Cuánto pagaste por la caja o paquete<input id="a-bk" type="text" inputmode="numeric" data-money="1" placeholder="Ej. 8.900" required></label>
-            <label>Unidades que trae la caja<input id="a-bq" type="text" inputmode="numeric" data-money="1" value="1" required></label>
-            <label>Costo de cada unidad (se calcula)<input id="a-k" type="text" inputmode="numeric" data-money="1" readonly tabindex="-1" placeholder="Automático"></label>
-            <label>Precio de venta por unidad<input id="a-p" type="text" inputmode="numeric" data-money="1" placeholder="A cuánto vendes cada una" required></label>
-            <label>Unidades que tienes ahora<input id="a-s" type="text" inputmode="numeric" data-money="1" value="0"></label>
-            <label>Avisar cuando queden<input id="a-al" type="text" inputmode="numeric" data-money="1" value="5"></label>
-            <label>Código (opcional)<input id="a-cd" type="text" placeholder="Código de barras"></label>
-            <label>Foto (opcional)<input id="a-f" type="file" accept="image/*"></label>
-            <button class="btn acc" type="submit">Agregar</button>
-          </form>
+          <form class="addf pform" id="addf">
+            <div class="pstep"><h3><span>1</span> ¿Qué producto es?</h3>
+              <label>Nombre del producto<input id="a-n" type="text" placeholder="Ej. Chicle Bubbaloo" required></label>
+              <label>Categoría<input id="a-c" type="text" list="cats" placeholder="Ej. Chicles, Dulces, Galletas" required></label>
+            </div>
+            <div class="pstep"><h3><span>2</span> ¿Cuánto te costó?</h3>
+              <label>Lo que pagaste por la CAJA completa ($)<input id="a-bk" type="text" inputmode="numeric" data-money="1" placeholder="Ej. 8.900" required><small class="ex">Ejemplo: la caja de chicles te costó $8.900, escribe 8.900.</small></label>
+              <label>¿Cuántas unidades trae esa caja?<input id="a-bq" type="text" inputmode="numeric" data-money="1" value="1" required><small class="ex">Ejemplo: la caja trae 12 chicles, escribe 12. Si lo compras suelto, deja 1.</small></label>
+              <input type="hidden" id="a-k" data-money="1">
+              <p class="live" id="a-live1"></p>
+            </div>
+            <div class="pstep"><h3><span>3</span> ¿A cómo lo vas a vender?</h3>
+              <label>Precio de venta de CADA unidad ($)<input id="a-p" type="text" inputmode="numeric" data-money="1" placeholder="Ej. 1.200" required><small class="ex">Ejemplo: vendes cada chicle a $1.200, escribe 1.200.</small></label>
+              <p class="live" id="alive"></p>
+            </div>
+            <div class="pstep"><h3><span>4</span> ¿Cuánto tienes y cuándo te aviso?</h3>
+              <label>Unidades que tienes ahora<input id="a-s" type="text" inputmode="numeric" data-money="1" value="0"><small class="ex">Ejemplo: 12 si tienes una caja completa.</small></label>
+              <label>Avísame cuando queden<input id="a-al" type="text" inputmode="numeric" data-money="1" value="5"><small class="ex">Ejemplo: 5. Cuando queden 5 o menos, te sale un aviso para que pidas más.</small></label>
+            </div>
+            <details class="pmore"><summary>Más opciones (foto y código de barras)</summary>
+              <label>Código de barras (opcional)<input id="a-cd" type="text" placeholder="Código de barras"></label>
+              <label>Foto (opcional)<input id="a-f" type="file" accept="image/*"></label>
+            </details>
+            <button class="btn acc big" type="submit">Agregar producto</button>
+          
+</form>
           <div class="live hint" id="alive"></div>
           <datalist id="cats"></datalist>
         </div>
@@ -1300,9 +1323,8 @@ if(!S.settings.clean2){var maria=S.users.filter(function(u){return u.name==="Mar
 /* ---------- inventario: costo por caja -> costo por unidad ---------- */
 function unitCost(bk,bq){return bq>0?Math.round(bk/bq):0}
 function recalcAdd(){var bk=nm("a-bk"),bq=Math.max(1,nm("a-bq")),k=unitCost(bk,bq),p=nm("a-p"),s=nm("a-s"),t="";$("a-k").value=bk>0?k:"";
- if(bk>0){t="Cada unidad te cuesta "+cop(k);
-  if(p>0){t+=" · ganancia por unidad "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%";if(s>0)t+=" · si vendes todo ganas "+cop((p-k)*s);if(p<k)t+=" · Cuidado: vendes por debajo del costo."}
-  else t+=" · ahora escribe a cuánto vas a vender cada unidad."}
+ $("a-live1").textContent=bk>0?"Cada unidad te cuesta "+cop(k)+(bq>1?" ("+cop(bk)+" ÷ "+bq+").":"."):"";
+ if(bk>0&&p>0){t="Ganancia por unidad: "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%";if(s>0)t+=" · si vendes las "+s+" unidades ganas "+cop((p-k)*s);if(p<k)t+=" · Cuidado: vendes por debajo del costo."}
  $("alive").textContent=t}
 $("addf").onsubmit=function(e){e.preventDefault();if(!mgr())return;var n=$("a-n").value.trim(),c=$("a-c").value.trim();if(!n||!c)return;
  var bk=Math.round(nm("a-bk")),bq=Math.max(1,Math.round(nm("a-bq")));
@@ -1315,13 +1337,25 @@ function entryModal(id){var x=find(id),bq=x.bq||1,bk=x.bk||x.k*bq;modal('<div cl
  $("en-ok").onclick=function(){var c=Math.round(nm("en-c")),bq2=Math.max(1,Math.round(nm("en-bq"))),bk2=Math.round(nm("en-bk")),u=c*bq2;if(u<=0){$("en-c").focus();return}
   var uk=unitCost(bk2,bq2);x.k=(x.stock+u)>0?Math.round((x.stock*x.k+u*uk)/(x.stock+u)):uk;x.stock+=u;x.bk=bk2;x.bq=bq2;save();closeModal();render();toast("Entrada registrada: +"+u+" de "+x.n+".")}}
 function editCalc(){var bk=nm("d-bk"),bq=Math.max(1,nm("d-bq"));$("d-kc").value=bk>0?unitCost(bk,bq):""}
+function editCalc(){var bk=nm("d-bk"),bq=Math.max(1,nm("d-bq")),k=unitCost(bk,bq),p=nm("d-p"),s=nm("d-s");$("d-kc").value=bk>0?k:"";
+ $("d-live1").textContent=bk>0?"Cada unidad te cuesta "+cop(k)+(bq>1?" ("+cop(bk)+" ÷ "+bq+").":"."):"";
+ $("d-live2").textContent=(bk>0&&p>0)?"Ganancia por unidad: "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%"+(s>0?" · si vendes las "+s+" unidades ganas "+cop((p-k)*s):"")+(p<k?" · Cuidado: vendes por debajo del costo.":""):""}
 function editModal(id){var x=find(id),bq=x.bq||1,bk=x.bk||x.k;
- modal('<div class="mh"><h3>Editar producto</h3><button class="x" data-close aria-label="Cerrar">×</button></div><label>Nombre<input id="d-n" value="'+esc(x.n)+'"></label><div class="grid2"><label>Categoría<input id="d-c" list="cats" value="'+esc(x.c)+'"></label><label>Precio de venta por unidad<input id="d-p" type="text" inputmode="numeric" data-money="1" value="'+x.p+'"></label><label>Costo de la caja o paquete<input id="d-bk" type="text" inputmode="numeric" data-money="1" value="'+bk+'"></label><label>Unidades que trae la caja<input id="d-bq" type="text" inputmode="numeric" data-money="1" value="'+bq+'"></label><label>Costo de cada unidad (se calcula)<input id="d-kc" type="text" inputmode="numeric" data-money="1" readonly tabindex="-1"></label><label>Avisar cuando queden<input id="d-al" type="text" inputmode="numeric" data-money="1" value="'+x.al+'"></label></div><label>Stock (corregir conteo)<input id="d-s" type="text" inputmode="numeric" data-money="1" value="'+x.stock+'"></label>'+
-  '<div class="grid2"><label>Forma de venta<select id="d-m"><option value="unit"'+(x.m==="unit"?' selected':'')+'>Por unidad</option><option value="pack"'+(x.m==="pack"?' selected':'')+'>Por pack</option><option value="mayor"'+(x.m==="mayor"?' selected':'')+'>Por mayor</option></select></label><label>Código<input id="d-cd" value="'+esc(x.cd||"")+'"></label><label id="d-qw">Unidades del pack<input id="d-q" type="text" inputmode="numeric" data-money="1" value="'+(x.mq||3)+'"></label><label id="d-pw">Precio del pack / c-u por mayor<input id="d-pp" type="text" inputmode="numeric" data-money="1" value="'+(x.mp||"")+'"></label></div><label>Cambiar foto<input id="d-f" type="file" accept="image/*"></label><button class="btn acc big" id="d-ok">Guardar</button>');
+ modal('<div class="mh"><h3>Editar producto</h3><button class="x" data-close aria-label="Cerrar">×</button></div><div class="pform">'+
+  '<div class="pstep"><h3><span>1</span> ¿Qué producto es?</h3><label>Nombre del producto<input id="d-n" value="'+esc(x.n)+'"></label><label>Categoría<input id="d-c" list="cats" value="'+esc(x.c)+'"></label></div>'+
+  '<div class="pstep"><h3><span>2</span> ¿Cuánto te costó?</h3><label>Lo que pagaste por la CAJA completa ($)<input id="d-bk" type="text" inputmode="numeric" data-money="1" value="'+bk+'"><small class="ex">Ejemplo: la caja te costó $8.900, escribe 8.900.</small></label><label>¿Cuántas unidades trae esa caja?<input id="d-bq" type="text" inputmode="numeric" data-money="1" value="'+bq+'"><small class="ex">Ejemplo: trae 12, escribe 12. Si lo compras suelto, deja 1.</small></label><input type="hidden" id="d-kc" data-money="1"><p class="live" id="d-live1"></p></div>'+
+  '<div class="pstep"><h3><span>3</span> ¿A cómo lo vendes?</h3><label>Precio de venta de CADA unidad ($)<input id="d-p" type="text" inputmode="numeric" data-money="1" value="'+x.p+'"><small class="ex">Ejemplo: cada chicle a $1.200, escribe 1.200.</small></label><p class="live" id="d-live2"></p></div>'+
+  '<div class="pstep"><h3><span>4</span> ¿Cuánto tienes y cuándo te aviso?</h3><label>Unidades que tienes ahora<input id="d-s" type="text" inputmode="numeric" data-money="1" value="'+x.stock+'"><small class="ex">Si el conteo no coincide, corrígelo aquí.</small></label><label>Avísame cuando queden<input id="d-al" type="text" inputmode="numeric" data-money="1" value="'+x.al+'"><small class="ex">Ejemplo: 5. Cuando queden 5 o menos te sale un aviso.</small></label></div>'+
+  '<details class="pmore"'+(x.m!=="unit"?' open':'')+'><summary>Más opciones (precio por pack, foto, código)</summary>'+
+  '<label>¿Cómo lo vendes?<select id="d-m"><option value="unit"'+(x.m==="unit"?' selected':'')+'>Solo por unidad</option><option value="pack"'+(x.m==="pack"?' selected':'')+'>Con precio especial por pack</option><option value="mayor"'+(x.m==="mayor"?' selected':'')+'>Con precio por mayor</option></select></label>'+
+  '<label id="d-qw">¿Cuántas unidades forman el pack (o el mayor)?<input id="d-q" type="text" inputmode="numeric" data-money="1" value="'+(x.mq||12)+'"><small class="ex">Ejemplo: 12.</small></label>'+
+  '<label id="d-pw">Precio del pack completo, o precio de cada unidad por mayor ($)<input id="d-pp" type="text" inputmode="numeric" data-money="1" value="'+(x.mp||"")+'"><small class="ex">Ejemplo: si llevan 12 les cobras $13.000 en total, escribe 13.000.</small></label>'+
+  '<label>Código de barras<input id="d-cd" value="'+esc(x.cd||"")+'"></label><label>Cambiar foto<input id="d-f" type="file" accept="image/*"></label></details>'+
+  '<button class="btn acc big" id="d-ok">Guardar cambios</button></div>');
  editCalc();var sync=function(){var u=$("d-m").value==="unit";$("d-qw").hidden=$("d-pw").hidden=u};$("d-m").onchange=sync;sync();
- $("d-ok").onclick=function(){var m=$("d-m").value;if(m!=="unit"&&!(nm("d-q")>1&&nm("d-pp")>0)){toast("Completa las unidades y el precio de la forma de venta.");return}
-  readPhoto($("d-f").files[0],function(img){var bk2=Math.round(nm("d-bk")),bq2=Math.max(1,Math.round(nm("d-bq")));x.n=$("d-n").value.trim()||x.n;x.c=$("d-c").value.trim()||x.c;x.p=Math.round(nm("d-p"));x.bk=bk2;x.bq=bq2;x.k=unitCost(bk2,bq2);x.al=Math.round(nm("d-al"));x.stock=Math.max(0,Math.round(nm("d-s")));x.m=m;x.mq=m==="unit"?0:Math.round(nm("d-q"));x.mp=m==="unit"?0:Math.round(nm("d-pp"));x.cd=$("d-cd").value.trim();if(img)x.img=img;save();closeModal();render()})}}
-document.addEventListener("input",function(e){var i=e.target.id;if(i==="d-bk"||i==="d-bq")editCalc();else if(i==="en-c"||i==="en-bq"||i==="en-bk")entryCalc()});
+ $("d-ok").onclick=function(){var m=$("d-m").value;if(m!=="unit"&&!(nm("d-q")>1&&nm("d-pp")>0)){toast("Completa cuántas unidades forman el pack y su precio.");return}
+  readPhoto($("d-f").files[0],function(img){var bk2=Math.round(nm("d-bk")),bq2=Math.max(1,Math.round(nm("d-bq")));x.n=$("d-n").value.trim()||x.n;x.c=$("d-c").value.trim()||x.c;x.p=Math.round(nm("d-p"));x.bk=bk2;x.bq=bq2;x.k=unitCost(bk2,bq2);x.al=Math.round(nm("d-al"));x.stock=Math.max(0,Math.round(nm("d-s")));x.m=m;x.mq=m==="unit"?0:Math.round(nm("d-q"));x.mp=m==="unit"?0:Math.round(nm("d-pp"));x.cd=$("d-cd").value.trim();if(img)x.img=img;save();closeModal();render();toast("Producto guardado.")})}}
+document.addEventListener("input",function(e){var i=e.target.id;if(i==="d-bk"||i==="d-bq"||i==="d-p"||i==="d-s")editCalc();else if(i==="en-c"||i==="en-bq"||i==="en-bk")entryCalc()});
 
 /* ---------- cotizaciones ---------- */
 var Q={n:"",t:"",d:7,p:"",note:"",lines:[],prod:"",qty:"1"};
@@ -1431,6 +1465,27 @@ function fitMobile(){var de=document.documentElement,vv=window.visualViewport,s=
  var touch=(navigator.maxTouchPoints||0)>0||(window.matchMedia&&matchMedia("(pointer:coarse)").matches);
  if(touch&&iw>=900&&real<=560&&real>=280){de.classList.add("forcemob");de.style.zoom=String(iw/real);[460,560,600,700,900,1000].forEach(function(n){if(real<=n)de.classList.add("mw"+n)})}}
 fitMobile();var _fr=null;window.addEventListener("resize",function(){clearTimeout(_fr);_fr=setTimeout(fitMobile,250)});window.addEventListener("orientationchange",function(){setTimeout(fitMobile,300)});
+
+/* ---------- avisos de inventario bajo ---------- */
+var NK="altiplano_noti",LK="altiplano_low";
+function notiOn(){try{return !!window.Notification&&Notification.permission==="granted"&&localStorage.getItem(NK)==="1"}catch(e){return false}}
+function notiShow(title,body){var o={body:body,icon:"/icon-192.png",badge:"/icon-192.png",tag:"low",renotify:true};
+ try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){navigator.serviceWorker.getRegistration().then(function(r){if(r&&r.showNotification)r.showNotification(title,o);else new Notification(title,o)}).catch(function(){try{new Notification(title,o)}catch(e){}});return}}catch(e){}
+ try{new Notification(title,o)}catch(e){}}
+function lowCheck(silent){var seen={};try{seen=JSON.parse(localStorage.getItem(LK)||"{}")}catch(e){}
+ var fresh=[];S.items.forEach(function(x){if(x.stock<=x.al){if(!seen[x.id]){seen[x.id]=1;fresh.push(x)}}else delete seen[x.id]});
+ try{localStorage.setItem(LK,JSON.stringify(seen))}catch(e){}
+ if(silent||!fresh.length||!notiOn())return;
+ notiShow("Inventario bajo - "+S.settings.store,fresh.slice(0,5).map(function(x){return x.n+(x.stock<=0?" (agotado)":" (quedan "+x.stock+")")}).join(", ")+(fresh.length>5?" y "+(fresh.length-5)+" más":"")+". Es hora de pedir.")}
+function notiAsk(){if(!window.Notification){toast("Este celular no permite avisos desde la página.");return}
+ Notification.requestPermission().then(function(p){if(p==="granted"){try{localStorage.setItem(NK,"1")}catch(e){}lowCheck(true);notiShow("Avisos activados","Te avisaremos cuando un producto se esté acabando.");toast("Avisos activados en este celular.")}else toast("No diste permiso. Puedes activarlo en los ajustes del navegador.");drawNoti()})}
+function drawNoti(){var v=$("v-inventario");if(!v)return;if(!$("notibox"))v.insertAdjacentHTML("afterbegin",'<div class="card notibox" id="notibox"></div>');
+ var on=notiOn(),blocked=window.Notification&&Notification.permission==="denied";
+ $("notibox").innerHTML='<p>'+(on?'<b>Avisos activados</b> en este celular: te avisa cuando un producto llega a la cantidad que pusiste en "Avísame cuando queden".':blocked?'Los avisos están bloqueados en este celular. Actívalos en los ajustes del navegador o de la app.':'<b>Activa los avisos</b> para que este celular te avise cuando un producto esté por acabarse.')+'</p>'+(on?'<button class="btn sm" id="noti-test" type="button">Probar aviso</button>':blocked?'':'<button class="btn acc sm" id="noti-on" type="button">Activar avisos</button>')}
+document.addEventListener("click",function(e){if(e.target.id==="noti-on")notiAsk();else if(e.target.id==="noti-test")notiShow("Aviso de prueba","Así te avisaremos cuando un producto esté por acabarse.")});
+var _save2=save;save=function(){_save2();try{lowCheck(false)}catch(e){}};
+var _render3=render;render=function(){_render3();if(view==="inventario")drawNoti()};
+lowCheck(true);
 
 Array.prototype.forEach.call(document.querySelectorAll("img[data-logo]"),function(i){i.src=LOGO_URI});
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tienda Altiplano</title>
+<title>Tienda María</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Inter:wght@400;500;600&display=swap">
 <style>
 /* Layout: quiet gallery look (white, plum accent, thin Jost type, big photos, hairlines) applied to the sales system. Left sidebar with vertical menu; dashboard with accent title bars. */
@@ -252,6 +252,7 @@ tr:last-child td{border-bottom:0}
 @media(max-width:600px){#calc .kpis .kpi:last-child:nth-child(odd){grid-column:1/-1}}
 .xbtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--red);font-size:14px;line-height:1;padding:0;flex:none}.xbtn:hover{background:var(--red-soft);border-color:var(--red)}
 .cline{grid-template-columns:1fr auto auto auto}
+.wm{font-size:22px;letter-spacing:.1em}
 @media print{
   body.pr-receipt>*:not(.ov){display:none!important}
   body.pr-receipt .ov{position:static;background:none;padding:0;display:block}
@@ -266,7 +267,7 @@ tr:last-child td{border-bottom:0}
 
 <div class="login" id="login" hidden>
   <div class="lbox">
-    <div class="wm">Altiplano<small>Golosinas y snacks</small></div>
+    <div class="wm">Tienda María<small>Golosinas y snacks</small></div>
     <p class="hint" style="margin:0">Elige tu usuario y escribe tu PIN.</p>
     <div class="users" id="ulist"></div>
     <label>PIN<input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••"></label>
@@ -278,7 +279,7 @@ tr:last-child td{border-bottom:0}
 
 <div class="app" id="app" hidden>
   <aside class="sb" id="sb">
-    <div class="wm">Altiplano<small>Golosinas y snacks</small></div>
+    <div class="wm">Tienda María<small>Golosinas y snacks</small></div>
     <nav class="nav" id="nav"></nav>
     <div class="sbf">
       <div class="who"><b id="uname"></b><small id="urole"></small></div>
@@ -436,7 +437,7 @@ function seed(){
  sales=sales.concat(genHist(items));
  return {items:items,sales:sales,seq:5,idseq:17,shifts:[],expenses:genExp(),eseq:1000,
   users:[{id:1,name:"Andrés",role:"Administrador",pin:"1234"},{id:2,name:"Marcela",role:"Secretaria",pin:"2222"},{id:3,name:"Carlos",role:"Trabajador",pin:"1111"},{id:4,name:"María",role:"Administrador",pin:"4321"}],
-  settings:{store:"Tienda Altiplano",wa:"",maxd:10,theme:""},uid:5}}
+  settings:{store:"Tienda María",wa:"",maxd:10,theme:""},uid:5}}
 function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function pick(r,arr,wi){var s=0;arr.forEach(function(a){s+=a[wi]});var x=r()*s;for(var i=0;i<arr.length;i++){x-=arr[i][wi];if(x<=0)return arr[i]}return arr[arr.length-1]}
 function genHist(items){var r=rng(20261111),out=[],now=new Date(),start=new Date(now.getFullYear(),now.getMonth()-11,1).getTime(),end=day0(Date.now())-1,
@@ -470,7 +471,7 @@ function lt(x,q){if(x.m==="pack"&&x.mq>1&&x.mp>0)return Math.floor(q/x.mq)*x.mp+
 function offer(x){if(x.m==="pack"&&x.mq>1&&x.mp>0)return "Pack x"+x.mq+": "+cop(x.mp);if(x.m==="mayor"&&x.mq>1&&x.mp>0)return "Desde "+x.mq+": "+cop(x.mp)+" c/u";return ""}
 var S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!S||!S.items)S=seed();
-S.settings=Object.assign({store:"Tienda Altiplano",wa:"",maxd:10,theme:"",aiCode:""},S.settings||{});
+S.settings=Object.assign({store:"Tienda María",wa:"",maxd:10,theme:"",aiCode:""},S.settings||{});
 S.expenses=S.expenses||[];S.eseq=S.eseq||1000;
 S.items.forEach(function(x){if(x.id===13&&x.p===2300){x.p=2500;x.mp=27000}if(x.id===14&&x.p===1300){x.p=2500;x.mp=54000}});
 if(!S.users.some(function(u){return u.name==="María"})){S.users.push({id:S.uid||(S.uid=S.users.reduce(function(m,u){return Math.max(m,u.id)},0)+1),name:"María",role:"Administrador",pin:"4321"});S.uid=(S.uid||0)+1}
@@ -871,7 +872,7 @@ function drawAjustes(){
  '<div class="card"><div class="ch"><h2>Datos</h2></div><p class="hint" style="margin:0 0 10px">Todo se guarda solo en este navegador. Las ventas marcadas como Ejemplo son de muestra y no cuentan como reales.</p><div class="tools"><button class="btn" id="g-hload">Cargar ventas y gastos de ejemplo</button><button class="btn" id="g-hclear">Borrar ventas y gastos de ejemplo</button><button class="btn red" id="g-reset">Restaurar datos de ejemplo</button></div></div>'}
 $("ajustesc").onchange=function(e){var t=e.target;
  if(t.id==="ai-c"){S.settings.aiCode=t.value.trim();save();toast("Código guardado.");return}
- if(t.id==="g-n"||t.id==="g-w"||t.id==="g-d"){S.settings.store=$("g-n").value.trim()||"Tienda Altiplano";S.settings.wa=$("g-w").value.replace(/\D/g,"");S.settings.maxd=Math.max(0,Math.min(100,Math.round(nm("g-d"))));save();$("g-m").textContent="Ajustes guardados."}
+ if(t.id==="g-n"||t.id==="g-w"||t.id==="g-d"){S.settings.store=$("g-n").value.trim()||"Tienda María";S.settings.wa=$("g-w").value.replace(/\D/g,"");S.settings.maxd=Math.max(0,Math.min(100,Math.round(nm("g-d"))));save();$("g-m").textContent="Ajustes guardados."}
  var p=t.getAttribute("data-pin");if(p){var u=S.users.filter(function(x){return x.id==p})[0];var v=t.value.replace(/\D/g,"");if(v.length<4){toast("El PIN debe tener al menos 4 números.");t.value=u.pin;return}u.pin=v;save();toast("PIN actualizado.")}};
 $("ajustesc").onclick=function(e){if(e.target.id==="ai-t"){testAI();return}var r=e.target.getAttribute("data-urm");
  if(r){if(e.target.getAttribute("data-sure")){S.users=S.users.filter(function(u){return u.id!=r});save();drawAjustes()}else{e.target.setAttribute("data-sure","1");e.target.textContent="¿Seguro?"}}
@@ -1093,7 +1094,10 @@ function addBars(){[["dashboard","dash"],["caja","caja"],["gastos","gastos"],["c
   if(!$("hdelall"))$("hprint").insertAdjacentHTML("afterend",'<button class="btn sm red" id="hdelall" hidden>Eliminar las ventas de esta lista</button>')}
  var dall=$("hdelall");if(dall)dall.hidden=!(cur&&cur.role==="Administrador");
  var x=$("xls");if(x&&!x.getAttribute("data-exp")){x.setAttribute("data-exp","xlsx");x.setAttribute("data-src","inv");x.textContent="Excel con gráficos";x.onclick=null;x.insertAdjacentHTML("afterend",'<button class="btn sm" data-exp="pdf" data-src="inv" style="margin-left:6px">PDF con gráficos</button>')}}
-var _render=render;render=function(){_render();addBars()};
+function brand(){Array.prototype.forEach.call(document.querySelectorAll(".wm"),function(w){if(w.firstChild)w.firstChild.nodeValue=S.settings.store});document.title=S.settings.store}
+if(S.settings.store==="Tienda Altiplano"){S.settings.store="Tienda María";save()}
+brand();
+var _render=render;render=function(){_render();addBars();brand()};
 
 applyTheme();
 var sid=null;try{sid=Number(localStorage.getItem(SES))}catch(e){}

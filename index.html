@@ -317,7 +317,7 @@ tr:last-child td{border-bottom:0}
   #itable td:nth-child(2){grid-area:c;color:var(--muted);font-size:12.5px}
   #itable td:nth-child(3){grid-area:p;text-align:right;font-weight:700;font-size:16px}
   #itable td:nth-child(4){grid-area:k;text-align:right;color:var(--muted);font-size:12.5px}
-  #itable td:nth-child(4):before{content:"Costo ";}
+  #itable td:nth-child(4):before{content:"Costo c/u ";}
   #itable td:nth-child(5){grid-area:s;font-size:13px}
   #itable td:nth-child(5):before{content:"Stock ";color:var(--muted)}
   #itable td:nth-child(6){grid-area:a}
@@ -383,7 +383,7 @@ html.mw900 #itable td:nth-child(1){grid-area:n}
 html.mw900 #itable td:nth-child(2){grid-area:c;color:var(--muted);font-size:12.5px}
 html.mw900 #itable td:nth-child(3){grid-area:p;text-align:right;font-weight:700;font-size:16px}
 html.mw900 #itable td:nth-child(4){grid-area:k;text-align:right;color:var(--muted);font-size:12.5px}
-html.mw900 #itable td:nth-child(4):before{content:"Costo ";}
+html.mw900 #itable td:nth-child(4):before{content:"Costo c/u ";}
 html.mw900 #itable td:nth-child(5){grid-area:s;font-size:13px}
 html.mw900 #itable td:nth-child(5):before{content:"Stock ";color:var(--muted)}
 html.mw900 #itable td:nth-child(6){grid-area:a}
@@ -491,10 +491,12 @@ html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
           <form class="addf" id="addf">
             <label>Nombre<input id="a-n" type="text" placeholder="Ej. Café Huila 340 g" required></label>
             <label>Categoría<input id="a-c" type="text" list="cats" placeholder="Café, Cerámica..." required></label>
-            <label>Precio venta<input id="a-p" type="text" inputmode="numeric" data-money="1" min="0" step="100" required></label>
-            <label>Costo<input id="a-k" type="text" inputmode="numeric" data-money="1" min="0" step="100" required></label>
-            <label>Stock inicial<input id="a-s" type="text" inputmode="numeric" data-money="1" min="0" step="1" value="0"></label>
-            <label>Avisar con<input id="a-al" type="text" inputmode="numeric" data-money="1" min="0" step="1" value="5"></label>
+            <label>Cuánto pagaste por la caja o paquete<input id="a-bk" type="text" inputmode="numeric" data-money="1" placeholder="Ej. 8.900" required></label>
+            <label>Unidades que trae la caja<input id="a-bq" type="text" inputmode="numeric" data-money="1" value="1" required></label>
+            <label>Costo de cada unidad (se calcula)<input id="a-k" type="text" inputmode="numeric" data-money="1" readonly tabindex="-1" placeholder="Automático"></label>
+            <label>Precio de venta por unidad<input id="a-p" type="text" inputmode="numeric" data-money="1" placeholder="A cuánto vendes cada una" required></label>
+            <label>Unidades que tienes ahora<input id="a-s" type="text" inputmode="numeric" data-money="1" value="0"></label>
+            <label>Avisar cuando queden<input id="a-al" type="text" inputmode="numeric" data-money="1" value="5"></label>
             <label>Código (opcional)<input id="a-cd" type="text" placeholder="Código de barras"></label>
             <label>Foto (opcional)<input id="a-f" type="file" accept="image/*"></label>
             <button class="btn acc" type="submit">Agregar</button>
@@ -768,7 +770,7 @@ function drawInv(){var u=0,v=0,low=0;S.items.forEach(function(x){u+=x.stock;v+=x
  $("istats").innerHTML=[["Productos",S.items.length],["Unidades en bodega",u],["Valor del inventario (costo)",cop(v)],["Stock bajo o agotado",low]].map(function(r,i){return '<div class="stat"><small>'+r[0]+'</small><b'+(i===3&&low?' class="bad"':'')+'>'+r[1]+'</b></div>'}).join("");
  $("cats").innerHTML=cats().map(function(c){return '<option value="'+esc(c)+'">'}).join("");
  var q=norm($("iq").value.trim()),l=S.items.filter(function(x){return !q||norm(x.n+" "+x.c+" "+(x.cd||"")).indexOf(q)>=0});
- $("itable").innerHTML='<table><thead><tr><th>Producto</th><th>Categoría</th><th class="n">Precio</th><th class="n">Costo</th><th class="n">Stock</th><th></th></tr></thead><tbody>'+l.map(function(x){
+ $("itable").innerHTML='<table><thead><tr><th>Producto</th><th>Categoría</th><th class="n">Precio</th><th class="n">Costo por unidad</th><th class="n">Stock</th><th></th></tr></thead><tbody>'+l.map(function(x){
   var st=x.stock<=0?'<span class="tag">Agotado</span> 0':x.stock<=x.al?'<span class="tag">Bajo</span> '+x.stock:x.stock;
   return '<tr><td><div class="pname">'+thumb(x)+'<span><b>'+esc(x.n)+'</b>'+(x.cd?'<br><small class="mono" style="color:var(--muted)">'+esc(x.cd)+'</small>':'')+'</span></div></td><td>'+esc(x.c)+'</td><td class="n mono">'+cop(x.p)+'</td><td class="n mono">'+cop(x.k)+'</td><td class="n mono">'+st+'</td>'+
   '<td><div class="acts"><button class="btn sm" data-in="'+x.id+'">+ Entrada</button><button class="btn sm" data-ed="'+x.id+'">Editar</button><button class="btn sm red" data-rm="'+x.id+'" aria-label="Eliminar '+esc(x.n)+'">✕</button></div></td></tr>'}).join("")+'</tbody></table>'+(l.length?'':'<p class="empty">No hay productos con ese nombre.</p>');
@@ -1294,6 +1296,32 @@ document.addEventListener("change",function(e){var s=e.target;if(!s.getAttribute
  u.role=s.value;save();if(cur&&u.id===cur.id){cur=u;start()}else drawAjustes();toast("Perfil de "+u.name+": "+u.role)});
 /* un solo usuario: María */
 if(!S.settings.clean2){var maria=S.users.filter(function(u){return u.name==="María"})[0]||{id:S.uid||5,name:"María",role:"Administrador",pin:"4321"};maria.role="Administrador";S.users=[maria];S.uid=Math.max(S.uid||1,maria.id+1);S.settings.clean2=1;save()}
+
+/* ---------- inventario: costo por caja -> costo por unidad ---------- */
+function unitCost(bk,bq){return bq>0?Math.round(bk/bq):0}
+function recalcAdd(){var bk=nm("a-bk"),bq=Math.max(1,nm("a-bq")),k=unitCost(bk,bq),p=nm("a-p"),s=nm("a-s"),t="";$("a-k").value=bk>0?k:"";
+ if(bk>0){t="Cada unidad te cuesta "+cop(k);
+  if(p>0){t+=" · ganancia por unidad "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%";if(s>0)t+=" · si vendes todo ganas "+cop((p-k)*s);if(p<k)t+=" · Cuidado: vendes por debajo del costo."}
+  else t+=" · ahora escribe a cuánto vas a vender cada unidad."}
+ $("alive").textContent=t}
+$("addf").onsubmit=function(e){e.preventDefault();if(!mgr())return;var n=$("a-n").value.trim(),c=$("a-c").value.trim();if(!n||!c)return;
+ var bk=Math.round(nm("a-bk")),bq=Math.max(1,Math.round(nm("a-bq")));
+ readPhoto($("a-f").files[0],function(img){var col=COLORS[S.idseq%COLORS.length];
+  S.items.push({id:S.idseq++,n:n,c:c,p:Math.round(nm("a-p")),k:unitCost(bk,bq),bk:bk,bq:bq,stock:Math.max(0,Math.round(nm("a-s"))),al:Math.max(0,Math.round(nm("a-al"))),cd:$("a-cd").value.trim(),m:"unit",mq:0,mp:0,bg:col[0],fg:col[1],img:img});
+  save();$("addf").reset();$("a-s").value=0;$("a-al").value=5;$("a-bq").value=1;$("a-k").value="";render();toast("Producto agregado.")})};
+function entryCalc(){var x=find(Number($("en-id").value)),c=Math.max(0,nm("en-c")),bq=Math.max(1,nm("en-bq")),bk=nm("en-bk"),u=c*bq,uk=unitCost(bk,bq),nk=(x.stock+u)>0?Math.round((x.stock*x.k+u*uk)/(x.stock+u)):uk;
+ $("en-sum").textContent=u>0&&bk>0?"Entran "+u+" unidades · cada una cuesta "+cop(uk)+" · el costo promedio de tu inventario queda en "+cop(nk)+" por unidad.":""}
+function entryModal(id){var x=find(id),bq=x.bq||1,bk=x.bk||x.k*bq;modal('<div class="mh"><h3>Entrada de mercancía</h3><button class="x" data-close aria-label="Cerrar">×</button></div><p class="hint" style="margin:0"><b>'+esc(x.n)+'</b> · stock actual '+x.stock+'</p><input type="hidden" id="en-id" value="'+id+'"><div class="grid2"><label>Cajas o paquetes que llegaron<input id="en-c" type="text" inputmode="numeric" data-money="1" value="1"></label><label>Unidades que trae cada caja<input id="en-bq" type="text" inputmode="numeric" data-money="1" value="'+bq+'"></label></div><label>Cuánto pagaste por cada caja o paquete<input id="en-bk" type="text" inputmode="numeric" data-money="1" value="'+bk+'"></label><p class="hint" id="en-sum" style="margin:0"></p><button class="btn acc big" id="en-ok">Guardar</button>');entryCalc();
+ $("en-ok").onclick=function(){var c=Math.round(nm("en-c")),bq2=Math.max(1,Math.round(nm("en-bq"))),bk2=Math.round(nm("en-bk")),u=c*bq2;if(u<=0){$("en-c").focus();return}
+  var uk=unitCost(bk2,bq2);x.k=(x.stock+u)>0?Math.round((x.stock*x.k+u*uk)/(x.stock+u)):uk;x.stock+=u;x.bk=bk2;x.bq=bq2;save();closeModal();render();toast("Entrada registrada: +"+u+" de "+x.n+".")}}
+function editCalc(){var bk=nm("d-bk"),bq=Math.max(1,nm("d-bq"));$("d-kc").value=bk>0?unitCost(bk,bq):""}
+function editModal(id){var x=find(id),bq=x.bq||1,bk=x.bk||x.k;
+ modal('<div class="mh"><h3>Editar producto</h3><button class="x" data-close aria-label="Cerrar">×</button></div><label>Nombre<input id="d-n" value="'+esc(x.n)+'"></label><div class="grid2"><label>Categoría<input id="d-c" list="cats" value="'+esc(x.c)+'"></label><label>Precio de venta por unidad<input id="d-p" type="text" inputmode="numeric" data-money="1" value="'+x.p+'"></label><label>Costo de la caja o paquete<input id="d-bk" type="text" inputmode="numeric" data-money="1" value="'+bk+'"></label><label>Unidades que trae la caja<input id="d-bq" type="text" inputmode="numeric" data-money="1" value="'+bq+'"></label><label>Costo de cada unidad (se calcula)<input id="d-kc" type="text" inputmode="numeric" data-money="1" readonly tabindex="-1"></label><label>Avisar cuando queden<input id="d-al" type="text" inputmode="numeric" data-money="1" value="'+x.al+'"></label></div><label>Stock (corregir conteo)<input id="d-s" type="text" inputmode="numeric" data-money="1" value="'+x.stock+'"></label>'+
+  '<div class="grid2"><label>Forma de venta<select id="d-m"><option value="unit"'+(x.m==="unit"?' selected':'')+'>Por unidad</option><option value="pack"'+(x.m==="pack"?' selected':'')+'>Por pack</option><option value="mayor"'+(x.m==="mayor"?' selected':'')+'>Por mayor</option></select></label><label>Código<input id="d-cd" value="'+esc(x.cd||"")+'"></label><label id="d-qw">Unidades del pack<input id="d-q" type="text" inputmode="numeric" data-money="1" value="'+(x.mq||3)+'"></label><label id="d-pw">Precio del pack / c-u por mayor<input id="d-pp" type="text" inputmode="numeric" data-money="1" value="'+(x.mp||"")+'"></label></div><label>Cambiar foto<input id="d-f" type="file" accept="image/*"></label><button class="btn acc big" id="d-ok">Guardar</button>');
+ editCalc();var sync=function(){var u=$("d-m").value==="unit";$("d-qw").hidden=$("d-pw").hidden=u};$("d-m").onchange=sync;sync();
+ $("d-ok").onclick=function(){var m=$("d-m").value;if(m!=="unit"&&!(nm("d-q")>1&&nm("d-pp")>0)){toast("Completa las unidades y el precio de la forma de venta.");return}
+  readPhoto($("d-f").files[0],function(img){var bk2=Math.round(nm("d-bk")),bq2=Math.max(1,Math.round(nm("d-bq")));x.n=$("d-n").value.trim()||x.n;x.c=$("d-c").value.trim()||x.c;x.p=Math.round(nm("d-p"));x.bk=bk2;x.bq=bq2;x.k=unitCost(bk2,bq2);x.al=Math.round(nm("d-al"));x.stock=Math.max(0,Math.round(nm("d-s")));x.m=m;x.mq=m==="unit"?0:Math.round(nm("d-q"));x.mp=m==="unit"?0:Math.round(nm("d-pp"));x.cd=$("d-cd").value.trim();if(img)x.img=img;save();closeModal();render()})}}
+document.addEventListener("input",function(e){var i=e.target.id;if(i==="d-bk"||i==="d-bq")editCalc();else if(i==="en-c"||i==="en-bq"||i==="en-bk")entryCalc()});
 
 /* ---------- cotizaciones ---------- */
 var Q={n:"",t:"",d:7,p:"",note:"",lines:[],prod:"",qty:"1"};

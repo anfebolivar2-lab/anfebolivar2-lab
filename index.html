@@ -306,6 +306,7 @@ tr:last-child td{border-bottom:0}
 .mbox{max-height:92vh;overflow-y:auto}
 .notibox{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.notibox p{margin:0;font-size:13.5px;flex:1;min-width:200px}
 .pform{align-items:stretch!important}.pform>*{width:100%}
+.syncb{display:block;font-size:11px;margin-top:2px;color:var(--muted)}.syncb.ok{color:var(--green)}.syncb.bad{color:var(--red)}.syncb.wait{color:var(--muted)}
 .bnav{display:none}
 @media (max-width:900px){
   .app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
@@ -424,6 +425,7 @@ html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
       <p class="hint" id="lhint"></p>
       <div class="lsep"><span>O también</span></div>
       <button class="lopt" id="open-cat" type="button"><span class="lic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5z"/><path d="M12 6v13.5"/></svg></span><span class="ltx"><b>Ver el catálogo</b><small>Productos y precios para clientes</small></span><span class="lgo">›</span></button>
+      <button class="lopt" id="cloud-open" type="button"><span class="lic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-7.97A5.5 5.5 0 0 1 17 8.5a4.5 4.5 0 0 1 0 9.5H7z"/></svg></span><span class="ltx"><b>Conectar con la nube</b><small>Usa la misma información en todos tus celulares</small></span><span class="lgo">›</span></button>
       <button class="lopt" id="pwa-install" type="button" hidden><span class="lic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 8v6m-3-3l3 3 3-3"/></svg></span><span class="ltx"><b>Instalar en el celular</b><small>Agrega Tienda María a tu pantalla de inicio</small></span></button>
       <a class="lopt" id="apk-dl" href="/Tienda-Maria.apk" download="Tienda-Maria.apk"><span class="lic ok"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5a1.5 1.5 0 0 0 3 0V19h2v3.5a1.5 1.5 0 0 0 3 0V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8A1.5 1.5 0 0 0 2 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 3.5 8zm17 0A1.5 1.5 0 0 0 19 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 20.5 8zm-4.97-5.84l1.3-1.3a.5.5 0 0 0-.7-.7l-1.48 1.48A5.97 5.97 0 0 0 12 1c-.96 0-1.86.23-2.66.64L7.85.15a.5.5 0 0 0-.7.7l1.3 1.3A5.99 5.99 0 0 0 6 7h12a5.99 5.99 0 0 0-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg></span><span class="ltx"><b>APK Android</b><small>Descargar Tienda-Maria.apk (última versión)</small></span><span class="lgo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></span></a>
       <p class="hint" id="ios-hint" hidden>En iPhone: toca Compartir y luego "Agregar a pantalla de inicio".</p>
@@ -458,7 +460,7 @@ html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
     <header class="top">
       <button class="burger" id="burger" aria-label="Abrir menú">≡</button>
       <h1 id="title">Tienda</h1>
-      <div class="clock"><b id="clk">--:--:--</b><small id="dt"></small><span class="net" id="net" hidden>Sin conexión</span></div>
+      <div class="clock"><b id="clk">--:--:--</b><small id="dt"></small><span class="syncb" id="syncb" hidden></span><span class="net" id="net" hidden>Sin conexión</span></div>
     </header>
     <div class="content">
       <div class="alertb" id="alert" hidden></div>
@@ -786,7 +788,7 @@ function receipt(id){var s=S.sales.filter(function(x){return x.id===id})[0];if(!
   (mgr()&&!s.void?'<button class="btn red sm" id="rvoid" data-id="'+s.id+'">Anular venta</button>':'')+(rolePerm("del")?'<button class="btn red sm" id="rdel" data-id="'+s.id+'" style="margin-left:8px">Eliminar venta</button>':''))};
 document.addEventListener("click",function(e){
  if(e.target.id==="rprint"||e.target.id==="rpdf"){document.body.classList.add("pr-receipt");setTimeout(function(){window.print()},50);return}
- if(e.target.id==="rvoid"){var b=e.target;if(b.getAttribute("data-sure")){var s=S.sales.filter(function(x){return x.id===b.getAttribute("data-id")})[0];if(s&&!s.void){s.void=true;s.items.forEach(function(i){var x=find(i.id);if(x)x.stock+=i.q});save();closeModal();render();toast("Venta anulada. El stock volvió al inventario.")}}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro? Toca otra vez para anular"}}});
+ if(e.target.id==="rvoid"){var b=e.target;if(b.getAttribute("data-sure")){var s=S.sales.filter(function(x){return x.id===b.getAttribute("data-id")})[0];if(s&&!s.void){s.void=true;s.u=Date.now();s.items.forEach(function(i){var x=find(i.id);if(x)x.stock+=i.q});save();closeModal();render();toast("Venta anulada. El stock volvió al inventario.")}}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro? Toca otra vez para anular"}}});
 window.addEventListener("afterprint",function(){document.body.classList.remove("pr-receipt","pr-list")});
 /* ---------- inventario ---------- */
 function drawInv(){var u=0,v=0,low=0;S.items.forEach(function(x){u+=x.stock;v+=x.stock*x.k;if(x.stock<=x.al)low++});
@@ -943,7 +945,7 @@ function drawGastos(){var m=$("xm").value;if(!m){m=ymOf(Date.now());$("xm").valu
 $("xm").oninput=drawGastos;
 $("xf").onsubmit=function(e){e.preventDefault();if(!mgr())return;var c=$("x-c").value.trim(),a=Math.round(nm("x-a"));if(!c||a<=0){$("x-m").textContent="Escribe el concepto y el monto.";return}
  S.expenses.unshift({id:S.eseq++,ts:Date.now(),concept:c,cat:$("x-k").value,amt:a,pay:$("x-p").value,note:$("x-n").value.trim(),by:cur.name,uid:cur.id});save();$("xf").reset();$("x-m").textContent="Gasto registrado: "+c+" por "+cop(a)+".";$("xm").value=ymOf(Date.now());drawGastos();drawNav()};
-$("xtable").onclick=function(e){var d=e.target.getAttribute("data-xdel");if(d===null)return;if(e.target.getAttribute("data-sure")){S.expenses=S.expenses.filter(function(x){return String(x.id)!==d});save();drawGastos()}else{e.target.setAttribute("data-sure","1");e.target.textContent="¿Seguro?"}};
+$("xtable").onclick=function(e){var d=e.target.getAttribute("data-xdel");if(d===null)return;if(e.target.getAttribute("data-sure")){tombAdd("expenses",S.expenses.filter(function(x){return String(x.id)===d}));S.expenses=S.expenses.filter(function(x){return String(x.id)!==d});save();drawGastos()}else{e.target.setAttribute("data-sure","1");e.target.textContent="¿Seguro?"}};
 /* ---------- asistente ---------- */
 var CHAT=[],AIMG=null,AIBUSY=false,answerMiss=false;
 function periodOf(q){var now=new Date(),d0=day0(now),dow=(now.getDay()+6)%7,D=864e5;
@@ -1049,7 +1051,7 @@ function testAI(){var c=$("ai-c").value.trim();S.settings.aiCode=c;save();$("ai-
 /* ---------- ajustes ---------- */
 function drawAjustes(){
  $("ajustesc").innerHTML='<div class="card"><div class="ch"><h2>Datos de la tienda</h2></div><div class="addf"><label>Nombre de la tienda<input id="g-n" value="'+esc(S.settings.store)+'"></label><label>WhatsApp del negocio (con indicativo)<input id="g-w" inputmode="numeric" value="'+esc(S.settings.wa)+'" placeholder="573001234567"></label><label>Descuento máximo del trabajador (%)<input id="g-d" type="text" inputmode="numeric" data-money="1" min="0" max="100" value="'+S.settings.maxd+'"></label></div><p class="hint" id="g-m"></p></div>'+
- aiCard()+profCard()+'<div class="card users2"><div class="ch"><h2>Usuarios</h2></div><div class="tw"><table><thead><tr><th>Nombre</th><th>Perfil</th><th>PIN</th><th></th></tr></thead><tbody>'+S.users.map(function(u){return '<tr><td>'+esc(u.name)+(u.id===cur.id?' <span class="tag ok">Tú</span>':'')+'</td><td>'+roleSel(u)+'</td><td><input type="text" inputmode="numeric" maxlength="8" value="'+esc(u.pin)+'" data-pin="'+u.id+'" style="width:100px" aria-label="PIN de '+esc(u.name)+'"></td><td class="n">'+(u.id===cur.id?'':'<button class="btn sm red" data-urm="'+u.id+'" aria-label="Eliminar usuario" title="Eliminar usuario">✕</button>')+'</td></tr>'}).join("")+'</tbody></table></div>'+
+ cloudCard()+aiCard()+profCard()+'<div class="card users2"><div class="ch"><h2>Usuarios</h2></div><div class="tw"><table><thead><tr><th>Nombre</th><th>Perfil</th><th>PIN</th><th></th></tr></thead><tbody>'+S.users.map(function(u){return '<tr><td>'+esc(u.name)+(u.id===cur.id?' <span class="tag ok">Tú</span>':'')+'</td><td>'+roleSel(u)+'</td><td><input type="text" inputmode="numeric" maxlength="8" value="'+esc(u.pin)+'" data-pin="'+u.id+'" style="width:100px" aria-label="PIN de '+esc(u.name)+'"></td><td class="n">'+(u.id===cur.id?'':'<button class="btn sm red" data-urm="'+u.id+'" aria-label="Eliminar usuario" title="Eliminar usuario">✕</button>')+'</td></tr>'}).join("")+'</tbody></table></div>'+
  '<form class="addf" id="uf"><label>Nombre<input id="u-n" required></label><label>Perfil<select id="u-r">'+roleOpts("")+'</select></label><label>PIN (4 a 8 números)<input id="u-p" inputmode="numeric" maxlength="8" required></label><button class="btn acc" type="submit">Agregar usuario</button></form><p class="hint" id="u-m"></p></div>'+
  '<div class="card"><div class="ch"><h2>Permisos</h2></div><div class="tw"><table><thead><tr><th>Acción</th><th>Administrador</th><th>Secretaria</th><th>Trabajador</th></tr></thead><tbody>'+[["Vender y cobrar","Sí","Sí","Sí"],["Ver ventas de hoy","Todas","Todas","Solo las suyas"],["Crear, editar o eliminar productos","Sí","Sí","No"],["Registrar entrada de mercancía","Sí","Sí","No"],["Ver caja, ganancia e historial","Sí","Sí","No"],["Anular ventas","Sí","Sí","No"],["Registrar gastos","Sí","Sí","No"],["Usar el asistente","Sí","Sí","No"],["Usuarios y ajustes","Sí","No","No"]].map(function(r){return '<tr><td>'+r[0]+'</td>'+r.slice(1).map(function(c){return '<td style="color:'+(c==="No"?'var(--red)':'var(--green)')+';font-weight:600">'+c+'</td>'}).join("")+'</tr>'}).join("")+'</tbody></table></div><p class="hint">Estos permisos se aplican en esta página. Para que también los exija un servidor hace falta una base de datos con inicio de sesión.</p></div>'+
  '<div class="card"><div class="ch"><h2>Datos</h2></div><p class="hint" style="margin:0 0 10px">Todo se guarda solo en este navegador. Las ventas marcadas como Ejemplo son de muestra y no cuentan como reales.</p><div class="tools"><button class="btn" id="g-hload">Cargar ventas y gastos de ejemplo</button><button class="btn" id="g-hclear">Borrar ventas y gastos de ejemplo</button><button class="btn red" id="g-reset">Restaurar datos de ejemplo</button></div></div>'}
@@ -1091,7 +1093,7 @@ function delModal(ids){var list=S.sales.filter(function(s){return ids.indexOf(s.
   '<div class="grid2"><button class="btn red" id="del-ok">Sí, eliminar</button><button class="btn" data-close>Cancelar</button></div>');
  $("del-ok").onclick=function(){var back=$("del-st")&&$("del-st").checked;
   list.forEach(function(s){if(back&&!s.void)s.items.forEach(function(i){var x=find(i.id);if(x)x.stock+=i.q})});
-  S.sales=S.sales.filter(function(s){return ids.indexOf(s.id)<0});save();closeModal();render();toast(list.length===1?"Venta eliminada.":list.length+" ventas eliminadas.")}}
+  tombAdd("sales",list);S.sales=S.sales.filter(function(s){return ids.indexOf(s.id)<0});save();closeModal();render();toast(list.length===1?"Venta eliminada.":list.length+" ventas eliminadas.")}}
 document.addEventListener("click",function(e){
  if(e.target.id==="rdel"&&cur&&rolePerm("del")){delModal([e.target.getAttribute("data-id")]);return}
  var sd=e.target.closest&&e.target.closest("[data-sdel]");if(sd&&cur&&rolePerm("del")){delModal([sd.getAttribute("data-sdel")]);return}
@@ -1388,8 +1390,8 @@ document.addEventListener("click",function(e){if(view!=="cotizacion")return;var 
   var q={id:"C-"+pad(S.qseq||1,6),ts:Date.now(),cust:{n:Q.n.trim(),tel:Q.t.replace(/\D/g,"")},items:its,sub:tt.sub,disc:tt.disc,total:tt.total,days:Q.d,note:Q.note.trim(),by:cur.name,sold:false};
   S.qseq=(S.qseq||1)+1;S.quotes.unshift(q);save();Q={n:"",t:"",d:7,p:"",note:"",lines:[],prod:Q.prod,qty:"1"};drawCot();toast("Cotización "+q.id+" guardada.");return}
  if((b=t.closest("[data-qpdf]"))){var qq=S.quotes.filter(function(x){return x.id===b.getAttribute("data-qpdf")})[0];if(qq)quotePdf(qq);return}
- if((b=t.closest("[data-qsell]"))){var q3=S.quotes.filter(function(x){return x.id===b.getAttribute("data-qsell")})[0];if(!q3)return;cart=[];q3.items.forEach(function(i){if(find(i.id))cart.push({id:i.id,q:i.q})});q3.sold=true;save();go("tienda");toast("Cotización "+q3.id+" pasada a venta. Cobra cuando el cliente pague.");return}
- if((b=t.closest("[data-qdel]"))){if(b.getAttribute("data-sure")){S.quotes=S.quotes.filter(function(x){return x.id!==b.getAttribute("data-qdel")});save();drawCot()}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro?"}}});
+ if((b=t.closest("[data-qsell]"))){var q3=S.quotes.filter(function(x){return x.id===b.getAttribute("data-qsell")})[0];if(!q3)return;cart=[];q3.items.forEach(function(i){if(find(i.id))cart.push({id:i.id,q:i.q})});q3.sold=true;q3.u=Date.now();save();go("tienda");toast("Cotización "+q3.id+" pasada a venta. Cobra cuando el cliente pague.");return}
+ if((b=t.closest("[data-qdel]"))){if(b.getAttribute("data-sure")){tombAdd("quotes",S.quotes.filter(function(x){return x.id===b.getAttribute("data-qdel")}));S.quotes=S.quotes.filter(function(x){return x.id!==b.getAttribute("data-qdel")});save();drawCot()}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro?"}}});
 async function quotePdf(q){if(BUSY)return;BUSY=true;toast("Preparando el PDF...");
  try{await loadLib(LIBS.pdf);await loadLib(LIBS.tbl);var J=window.jspdf.jsPDF,doc=new J({unit:"pt",format:"a4",compress:true}),W=595,M=40,plum=[122,47,87];
   doc.setFillColor(246,233,229);doc.rect(0,0,W,86,"F");try{doc.addImage(LOGO_URI,"JPEG",M,14,58,58)}catch(e){}
@@ -1486,6 +1488,78 @@ document.addEventListener("click",function(e){if(e.target.id==="noti-on")notiAsk
 var _save2=save;save=function(){_save2();try{lowCheck(false)}catch(e){}};
 var _render3=render;render=function(){_render3();if(view==="inventario")drawNoti()};
 lowCheck(true);
+
+/* ---------- nube: la misma información en todos los celulares ---------- */
+var SK="altiplano_sync_v1",SY={code:"",rev:"",h:null,on:false,busy:false,again:false,dirty:false,err:"",last:0},SYT=null;
+function syLoad(){try{var o=JSON.parse(localStorage.getItem(SK)||"null");if(o&&o.code){SY.code=o.code;SY.rev=o.rev||"";SY.h=o.h||null;SY.dirty=!!o.dirty;SY.on=true}}catch(e){}}
+function syStore(){try{localStorage.setItem(SK,JSON.stringify({code:SY.code,rev:SY.rev,h:SY.h,dirty:SY.dirty}))}catch(e){}}
+function hsec(x){var s=JSON.stringify(x==null?null:x),h=5381,i;for(i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h}
+function setNoTheme(s){var o=Object.assign({},s||{});delete o.theme;return o}
+function hashes(d){return {items:hsec(d.items),users:hsec(d.users),roles:hsec(d.roles),shifts:hsec(d.shifts),settings:hsec(setNoTheme(d.settings))}}
+function tombAdd(c,list){S.tomb=S.tomb||{};S.tomb[c]=(S.tomb[c]||[]).concat(list.map(function(x){return x.id+"|"+x.ts})).slice(-800)}
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function syFetch(method,body){return fetch("/api/state"+(method==="GET"?"?rev="+encodeURIComponent(SY.rev):""),{method:method,headers:{"content-type":"application/json","x-sync-code":SY.code},body:body?JSON.stringify(body):undefined,cache:"no-store"})}
+function syBadge(){var b=$("syncb");if(!b)return;if(!SY.on){b.hidden=true;return}b.hidden=false;
+ b.className="syncb "+(SY.err?"bad":SY.dirty||SY.busy?"wait":"ok");b.textContent=SY.err?SY.err:(SY.dirty||SY.busy?"Guardando en la nube...":"En la nube");b.title=SY.last?"Última sincronización: "+fmtT(SY.last):""}
+function normalizeS(){S.settings=Object.assign({store:"Tienda María",wa:"",maxd:10,theme:"",aiCode:""},S.settings||{});["items","sales","expenses","shifts","users","quotes"].forEach(function(k){S[k]=S[k]||[]});S.eseq=S.eseq||1000;S.qseq=S.qseq||1;S.seq=S.seq||1;S.tomb=S.tomb||{}}
+function syMerge(R,rev){var L=S,out=JSON.parse(JSON.stringify(R)),H=SY.h||{},newSales=[];out.tomb=out.tomb||{};L.tomb=L.tomb||{};
+ ["sales","expenses","quotes"].forEach(function(c){var tr=out.tomb[c]||[],tl=L.tomb[c]||[],tomb=tr.concat(tl.filter(function(k){return tr.indexOf(k)<0}));out.tomb[c]=tomb.slice(-800);
+  var key=function(x){return x.id+"|"+x.ts},rk={},ids={};(out[c]||[]).forEach(function(x){rk[key(x)]=x;ids[x.id]=1});
+  var res=(out[c]||[]).filter(function(x){return tl.indexOf(key(x))<0});
+  (L[c]||[]).forEach(function(x){var k=key(x);if(tomb.indexOf(k)>=0)return;var r=rk[k];
+   if(r){if((x.u||0)>(r.u||0)){var i=res.indexOf(r);if(i>=0)res[i]=x}}
+   else{var y=JSON.parse(JSON.stringify(x));if(ids[y.id]){if(c==="sales"){out.seq=Math.max(out.seq||1,L.seq||1);y.id="V-"+pad(out.seq++,6)}else if(c==="quotes"){out.qseq=Math.max(out.qseq||1,L.qseq||1);y.id="C-"+pad(out.qseq++,6)}else{out.eseq=Math.max(out.eseq||1000,L.eseq||1000)+1;y.id=out.eseq}}ids[y.id]=1;res.push(y);if(c==="sales")newSales.push(y)}});
+  out[c]=res.sort(function(a,b){return b.ts-a.ts})});
+ var keepItems=false;
+ ["items","users","roles","shifts"].forEach(function(s){var cl=hsec(L[s])!==H[s],cr=hsec(R[s])!==H[s];if(cl&&!cr){out[s]=L[s];if(s==="items")keepItems=true}else out[s]=R[s]});
+ if(!keepItems)newSales.forEach(function(s){if(!s.void)s.items.forEach(function(i){var x=out.items.filter(function(y){return y.id===i.id})[0];if(x)x.stock=Math.max(0,x.stock-i.q)})});
+ var cl2=hsec(setNoTheme(L.settings))!==H.settings,cr2=hsec(setNoTheme(R.settings))!==H.settings;
+ out.settings=(cl2&&!cr2)?Object.assign({},L.settings):Object.assign({},R.settings,{theme:(L.settings||{}).theme||""});
+ ["seq","idseq","eseq","qseq","uid"].forEach(function(k){out[k]=Math.max(out[k]||0,L[k]||0)});
+ S=out;normalizeS();saveLocal();SY.rev=rev;SY.dirty=true}
+function syApply(R,rev){var th=(S.settings||{}).theme||"";S=R;normalizeS();S.settings.theme=th;saveLocal();SY.rev=rev;SY.h=hashes(S);SY.dirty=false;SY.err="";SY.last=Date.now();syStore();
+ if(cur){var u=S.users.filter(function(x){return x.id===cur.id})[0];if(!u){$("logout").click();return}cur=u}
+ applyTheme();if(cur&&$("app")&&!$("app").hidden)render();else if(!cur)drawLogin();try{lowCheck(false)}catch(e){}syBadge()}
+async function syPush(force){if(!SY.on)return;if(SY.busy){SY.again=true;return}SY.busy=true;syBadge();
+ try{for(var n=0;n<4;n++){var r=await syFetch("PUT",{rev:SY.rev,data:S,force:!!force});
+   if(r.status===200){var j=await r.json();SY.rev=j.rev;SY.h=hashes(S);SY.dirty=false;SY.err="";SY.last=Date.now();syStore();break}
+   if(r.status===409){var j2=await r.json();if(j2.data)syMerge(j2.data,j2.rev);else{SY.rev=""}force=false;continue}
+   if(r.status===401){SY.err="Código de la nube incorrecto";break}
+   if(r.status===413){SY.err="Hay demasiadas fotos para guardar en la nube";break}
+   throw new Error("http "+r.status)}}
+ catch(e){SY.err="Sin conexión: se subirá luego";SY.dirty=true;syStore()}
+ SY.busy=false;syBadge();if(SY.again){SY.again=false;syPush()}}
+async function syPull(){if(!SY.on||SY.busy)return;if(SY.dirty){syPush();return}
+ try{var r=await syFetch("GET");if(r.status===401){SY.err="Código de la nube incorrecto";syBadge();return}if(r.status!==200)throw new Error("http");var j=await r.json();SY.err="";
+  if(j.same){SY.last=Date.now();syBadge();return}
+  if(j.empty){SY.dirty=true;syPush();return}
+  if(j.data)syApply(j.data,j.rev)}catch(e){SY.err="Sin conexión";syBadge()}}
+function syncSoon(){if(!SY.on)return;SY.dirty=true;syStore();syBadge();clearTimeout(SYT);SYT=setTimeout(function(){syPush()},1200)}
+var _save3=save;save=function(){_save3();syncSoon()};
+syLoad();
+setInterval(function(){if(!document.hidden)syPull()},20000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)syPull()});window.addEventListener("online",function(){syPull()});
+/* conectar este celular */
+function cloudModal(){modal('<div class="mh"><h3>Conectar con la nube</h3><button class="x" data-close aria-label="Cerrar">×</button></div><p class="hint" style="margin:0">Con la nube, todos tus celulares ven la <b>misma información</b>: productos, ventas, gastos y usuarios. Escribe el código de la tienda.</p><label>Código de la tienda<input id="cl-code" autocomplete="off" autocapitalize="characters" placeholder="Ej. ABCD-1234"></label><p class="err" id="cl-err"></p><button class="btn acc big" id="cl-go" type="button">Conectar</button>');
+ $("cl-go").onclick=async function(){var code=$("cl-code").value.trim();if(code.length<4){$("cl-err").textContent="Escribe el código de la tienda.";return}
+  $("cl-go").disabled=true;$("cl-err").textContent="Conectando...";SY.code=code;SY.rev="";
+  try{var r=await syFetch("GET");if(r.status===401){$("cl-err").textContent="Ese código no es correcto.";SY.on=false;$("cl-go").disabled=false;return}
+   if(r.status===503){$("cl-err").textContent="La nube todavía no está configurada.";SY.on=false;$("cl-go").disabled=false;return}
+   if(r.status!==200)throw new Error("http");var j=await r.json();
+   if(j.empty){cloudChoose(null)}else cloudChoose(j)}
+  catch(e){$("cl-err").textContent="No hay internet. Intenta de nuevo.";$("cl-go").disabled=false}}}
+function cloudChoose(remote){var localHas=S.sales.length||S.expenses.length||S.items.length;
+ if(!remote){modal('<div class="mh"><h3>La nube está vacía</h3><button class="x" data-close aria-label="Cerrar">×</button></div><p style="margin:0">Aún no hay información guardada en la nube. ¿Subir lo que hay en <b>este celular</b>? Después los demás celulares tendrán esta misma información.</p><button class="btn acc big" id="cl-up" type="button">Sí, subir la información de este celular</button><button class="btn" data-close>Cancelar</button>');
+  $("cl-up").onclick=async function(){SY.on=true;SY.dirty=true;SY.h={};await syPush(true);closeModal();toast("Listo: este celular ya está en la nube.");syBadge();if(cur)render()};return}
+ modal('<div class="mh"><h3>La nube ya tiene información</h3><button class="x" data-close aria-label="Cerrar">×</button></div><p style="margin:0">La tienda ya tiene datos guardados en la nube. Lo normal es <b>usar la información de la nube</b> en este celular.</p><p class="hint" style="margin:0">Se reemplaza lo que haya aquí por: <b>'+remote.data.items.length+' productos</b>, <b>'+remote.data.sales.length+' ventas</b> y '+remote.data.users.length+' usuario(s).</p><button class="btn acc big" id="cl-down" type="button">Usar la información de la nube</button><button class="btn red sm" id="cl-over" type="button">En cambio, subir la de este celular (borra la de la nube)</button><button class="btn" data-close>Cancelar</button>');
+ $("cl-down").onclick=function(){SY.on=true;syApply(remote.data,remote.rev);closeModal();toast("Este celular ya tiene la información de la nube.")};
+ $("cl-over").onclick=function(){var b=$("cl-over");if(b.getAttribute("data-sure")){SY.on=true;SY.rev=remote.rev;SY.dirty=true;SY.h={};syPush(true).then(function(){closeModal();toast("La nube ahora tiene la información de este celular.")})}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro? Se borra lo que hay en la nube. Toca otra vez"}}}
+document.addEventListener("click",function(e){var id=e.target.id;
+ if(id==="cloud-open"||(e.target.closest&&e.target.closest("#cloud-open")))cloudModal();
+ else if(id==="cl-sync"){SY.dirty=true;syPush().then(function(){toast(SY.err||"Sincronizado.")});}
+ else if(id==="cl-off"){var b=e.target;if(b.getAttribute("data-sure")){SY.on=false;SY.code="";SY.rev="";SY.h=null;SY.dirty=false;try{localStorage.removeItem(SK)}catch(x){}syBadge();drawAjustes();toast("Este celular ya no está conectado a la nube.")}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro? Toca otra vez"}}});
+function cloudCard(){return '<div class="card"><div class="ch"><h2>Nube (misma información en todos los celulares)</h2></div>'+(SY.on?'<p style="margin:0 0 10px"><b>Este celular está conectado.</b> '+(SY.err?esc(SY.err):SY.dirty?'Guardando cambios...':'Todo guardado en la nube.')+(SY.last?' Última revisión: '+fmtT(SY.last)+'.':'')+'</p><div class="tools"><button class="btn sm" id="cl-sync" type="button">Sincronizar ahora</button><button class="btn red sm" id="cl-off" type="button">Desconectar este celular</button></div>':'<p style="margin:0 0 10px">Este celular <b>no está conectado</b>. Conéctalo para ver y guardar la misma información que en tus otros celulares.</p><button class="btn acc sm" id="cloud-open" type="button">Conectar con la nube</button>')+'</div>'}
+syBadge();if(SY.on)setTimeout(syPull,1500);
 
 Array.prototype.forEach.call(document.querySelectorAll("img[data-logo]"),function(i){i.src=LOGO_URI});
 

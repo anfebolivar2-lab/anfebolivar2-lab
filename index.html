@@ -307,6 +307,11 @@ tr:last-child td{border-bottom:0}
 .notibox{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.notibox p{margin:0;font-size:13.5px;flex:1;min-width:200px}
 .pform{align-items:stretch!important}.pform>*{width:100%}
 .syncb{display:block;font-size:11px;margin-top:2px;color:var(--muted)}.syncb.ok{color:var(--green)}.syncb.bad{color:var(--red)}.syncb.wait{color:var(--muted)}
+.sb{overflow-y:auto}
+.sbx{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.sbtn.big2{padding:11px 10px;font-size:14px;text-align:center;text-decoration:none;display:block;color:var(--ink)}
+.sbtn.out{color:var(--red);border-color:var(--red)}
+.ver{color:var(--muted);font-size:11px;text-align:center}
 .bnav{display:none}
 @media (max-width:900px){
   .app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
@@ -338,6 +343,12 @@ tr:last-child td{border-bottom:0}
   .cday small:not(.ce){display:none}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+  .sb{gap:12px!important;padding-top:max(16px,env(safe-area-inset-top,0px))!important;padding-bottom:max(14px,env(safe-area-inset-bottom,0px))!important}
+  .sb .slogo{width:44px;height:44px;margin-bottom:4px}
+  .sb .wm{font-size:18px}
+  .nav button{font-size:17px;padding:4px 0}
+  .sbx{margin:0;gap:6px}.sbtn.big2{padding:9px 10px;font-size:13.5px}
+  .sbf{gap:6px;margin-top:4px}.sbf .who{display:none}
 }
 @media print{
   body.pr-receipt>*:not(.ov){display:none!important}
@@ -404,6 +415,14 @@ html.mw900 .addf{grid-template-columns:1fr 1fr}
 html.mw900 .cday small:not(.ce){display:none}
 html.mw900 .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+html.mw900 .sb{gap:12px!important;padding-top:max(16px,env(safe-area-inset-top,0px))!important;padding-bottom:max(14px,env(safe-area-inset-bottom,0px))!important}
+html.mw900 .sb .slogo{width:44px;height:44px;margin-bottom:4px}
+html.mw900 .sb .wm{font-size:18px}
+html.mw900 .nav button{font-size:17px;padding:4px 0}
+html.mw900 .sbx{margin:0;gap:6px}
+html.mw900 .sbtn.big2{padding:9px 10px;font-size:13.5px}
+html.mw900 .sbf{gap:6px;margin-top:4px}
+html.mw900 .sbf .who{display:none}
 </style>
 
 <div class="login" id="login" hidden>
@@ -451,10 +470,11 @@ html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
   <aside class="sb" id="sb">
     <img class="slogo" data-logo alt="" width="64" height="64"><div class="wm">Tienda María<small>Golosinas y snacks</small></div>
     <nav class="nav" id="nav"></nav>
+    <div class="sbx" id="sbx"><button class="sbtn big2" id="up-check" type="button">Buscar actualizaciones</button><a class="sbtn big2" id="apk-menu" href="/Tienda-Maria.apk" download="Tienda-Maria.apk">APK Android (descargar)</a><small class="ver" id="appver"></small></div>
     <div class="sbf">
       <div class="who"><b id="uname"></b><small id="urole"></small></div>
       <button class="sbtn" id="theme">Cambiar tema</button>
-      <button class="sbtn" id="logout">Cerrar sesión</button>
+      <button class="sbtn big2 out" id="logout">Cerrar sesión</button>
     </div>
   </aside>
   <div class="main">
@@ -1429,12 +1449,13 @@ var LOGO_URI="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwQDAwQ
  if($("pwa-install"))$("pwa-install").onclick=function(){if(dp){dp.prompt();dp=null;this.hidden=true}};
  if(web&&!standalone&&/iphone|ipad|ipod/i.test(navigator.userAgent)&&$("ios-hint"))$("ios-hint").hidden=false;
  if(!web||!("serviceWorker" in navigator))return;
- var reg=null,want=false;
+ var reg=null,want=false;window.__web=true;
  function banner(w){if($("updbar"))return;var d=document.createElement("div");d.className="updbar";d.id="updbar";d.setAttribute("role","status");
   d.innerHTML='<span><b>Hay una versión nueva de Tienda María.</b><br>Actualiza para tener las últimas mejoras.</span><button type="button" id="updgo">Actualizar</button><button type="button" class="x2" id="updno" aria-label="Más tarde">✕</button>';
   document.body.appendChild(d);$("updno").onclick=function(){d.remove()};
   $("updgo").onclick=function(){want=true;$("updgo").textContent="Actualizando...";try{w.postMessage("SKIP_WAITING")}catch(e){location.reload()};setTimeout(function(){location.reload()},4000)};
   try{if(window.Notification&&Notification.permission==="granted"&&reg)reg.showNotification("Tienda María",{body:"Hay una versión nueva. Ábrela para actualizar.",icon:"/icon-192.png",tag:"upd"})}catch(e){}}
+ window.__updBanner=banner;window.__apply=function(w){want=true;try{w.postMessage("SKIP_WAITING")}catch(e){location.reload()}setTimeout(function(){location.reload()},4000)};
  navigator.serviceWorker.addEventListener("controllerchange",function(){if(want)location.reload()});
  navigator.serviceWorker.register("/sw.js").then(function(r){reg=r;
   if(r.waiting&&navigator.serviceWorker.controller)banner(r.waiting);
@@ -1463,6 +1484,20 @@ $("open-cat").onclick=$("top-cat").onclick=function(){showCat(true)};
 $("cat-login").onclick=$("top-login").onclick=function(){showCat(false);var p=$("pin");if(p)p.focus()};
 $("cat-q").oninput=function(){CATQ=this.value;drawCatalog()};
 $("cat-chips").onclick=function(e){var b=e.target.closest("[data-cc]");if(b){CATC=b.getAttribute("data-cc");drawCatalog()}};
+
+/* ---------- menú: actualizaciones, APK y versión ---------- */
+var APP_VER="25aeedce";
+(function(){var web=/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname);if($("appver"))$("appver").textContent="Versión "+APP_VER;if($("apk-menu")&&!web)$("apk-menu").hidden=true;
+ if($("apk-menu"))$("apk-menu").addEventListener("click",function(){setTimeout(closeMenu,200)});
+ $("up-check").onclick=async function(){closeMenu();toast("Buscando actualizaciones...");
+  if(!web||!("serviceWorker" in navigator)){setTimeout(function(){location.reload()},600);return}
+  var r=null;try{r=await navigator.serviceWorker.getRegistration()}catch(e){}
+  if(!r){setTimeout(function(){location.reload()},600);return}
+  try{await r.update()}catch(e){toast("No hay internet para buscar actualizaciones.");return}
+  var n=0,t=setInterval(function(){n++;var w=r.waiting;
+   if(w){clearInterval(t);if(cart&&cart.length&&window.__updBanner){window.__updBanner(w);toast("Hay una versión nueva. Termina la venta y pulsa Actualizar.")}else{toast("Descargando la versión nueva...");window.__apply&&window.__apply(w)}}
+   else if(!r.installing&&n>=4){clearInterval(t);toast("Ya tienes la última versión ("+APP_VER+").")}
+   else if(n>=24){clearInterval(t);toast("Ya tienes la última versión ("+APP_VER+").")}},500)}})();
 
 /* ---------- navegación inferior y ajuste automático al celular ---------- */
 var BN_ICONS={tienda:'<path d="M6 7h12l-1 13H7L6 7zM9 7a3 3 0 0 1 6 0"/>',cotizacion:'<path d="M7 3h7l4 4v14H7V3zM14 3v4h4M9.5 12h5M9.5 16h5"/>',caja:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',inventario:'<path d="M3 8l9-5 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5M12 13v8"/>',gastos:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6"/>',historial:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',dashboard:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',mas:'<path d="M4 7h16M4 12h16M4 17h16"/>'};

@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "co.tiendamaria.app",
+        "sha256_cert_fingerprints": ["E1:5D:F1:D1:59:E8:B4:C6:91:F8:36:17:96:98:11:A2:12:52:33:EC:E8:3B:9B:CB:12:AB:82:49:50:C6:24:53"]
+      }
+    }]

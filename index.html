@@ -11,13 +11,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tienda María">
-<meta name="theme-color" content="#7a2f57">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tienda María">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Inter:wght@400;500;600&display=swap">
 <style>
 /* Layout: quiet gallery look (white, plum accent, thin Jost type, big photos, hairlines) applied to the sales system. Left sidebar with vertical menu; dashboard with accent title bars. */
@@ -303,6 +296,38 @@ tr:last-child td{border-bottom:0}
 .cline{grid-template-columns:1fr auto auto auto}
 .wm{font-size:22px;letter-spacing:.1em}
 .pfv{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.pfv .chk{margin:5px 0}
+.bnav{display:none}
+@media (max-width:900px){
+  .app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
+  .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--card);border-top:1px solid var(--line);padding:6px 6px max(6px,env(safe-area-inset-bottom,0px));justify-content:space-around;box-shadow:0 -6px 24px rgba(0,0,0,.06)}
+  .bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--muted);font-size:11px;padding:6px 2px;border-radius:12px;min-width:0}
+  .bnav button svg{width:24px;height:24px}
+  .bnav button[aria-current="page"]{color:var(--acc);font-weight:600;background:var(--acc-soft)}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat{padding:12px 14px}.stat b{font-size:22px!important}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi{padding:12px 14px}.kpi b{font-size:22px}
+  #itable thead{display:none}
+  #itable table,#itable tbody{display:block;min-width:0!important;width:100%}
+  #itable tr{display:grid;width:100%;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n p" "c k" "s s" "a a";gap:6px 12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center}
+  #itable .pname{min-width:0;flex-wrap:nowrap}
+  #itable .pname span{min-width:0;overflow-wrap:anywhere}
+  #itable td{min-width:0;padding:0!important;border:0!important;text-align:left}
+  #itable td:nth-child(1){grid-area:n}
+  #itable td:nth-child(2){grid-area:c;color:var(--muted);font-size:12.5px}
+  #itable td:nth-child(3){grid-area:p;text-align:right;font-weight:700;font-size:16px}
+  #itable td:nth-child(4){grid-area:k;text-align:right;color:var(--muted);font-size:12.5px}
+  #itable td:nth-child(4):before{content:"Costo ";}
+  #itable td:nth-child(5){grid-area:s;font-size:13px}
+  #itable td:nth-child(5):before{content:"Stock ";color:var(--muted)}
+  #itable td:nth-child(6){grid-area:a}
+  .acts{flex-wrap:wrap;justify-content:flex-start}
+  .tw{overflow-x:auto}
+  .addf{grid-template-columns:1fr 1fr}
+  .cday small:not(.ce){display:none}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+}
 @media print{
   body.pr-receipt>*:not(.ov){display:none!important}
   body.pr-receipt .ov{position:static;background:none;padding:0;display:block}
@@ -313,6 +338,61 @@ tr:last-child td{border-bottom:0}
   body{background:#fff}
 }
 @media (prefers-reduced-motion:reduce){.sb,.th img{transition:none}}
+
+/* espejo para modo computador */
+html.mw700 .chatopts{grid-template-columns:1fr}
+html.mw1000 .pos{grid-template-columns:1fr}
+html.mw1000 .dash{grid-template-columns:1fr}
+html.mw1000 .dfil{position:static;flex-direction:row;flex-wrap:wrap}
+html.mw1000 .dfil>div{flex:1;min-width:150px}
+html.mw900 .app{grid-template-columns:1fr}
+html.mw900 .sb{position:fixed;left:0;top:0;bottom:0;width:270px;z-index:40;transform:translateX(-100%);transition:transform .2s}
+html.mw900 .sb.open{transform:none}
+html.mw900 .burger{display:block}
+html.mw900 .top{padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+html.mw900 .top h1{font-size:26px}
+html.mw900 .content{padding:16px max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+html.mw900 .pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 14px}
+html.mw900 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:39}
+html.mw460 .dn{grid-template-columns:1fr}
+html.mw460 .dgrid{grid-template-columns:1fr}
+html.mw560 .lbrand b{display:none}
+html.mw560 .catgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.mw600 .cday{min-height:56px;padding:4px}
+html.mw600 .cday small:not(.ce){display:none}
+html.mw600 .cday .cv{font-size:11px}
+html.mw600 #calc .kpis .kpi:last-child:nth-child(odd){grid-column:1/-1}
+html.mw900 .app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
+html.mw900 .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--card);border-top:1px solid var(--line);padding:6px 6px max(6px,env(safe-area-inset-bottom,0px));justify-content:space-around;box-shadow:0 -6px 24px rgba(0,0,0,.06)}
+html.mw900 .bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--muted);font-size:11px;padding:6px 2px;border-radius:12px;min-width:0}
+html.mw900 .bnav button svg{width:24px;height:24px}
+html.mw900 .bnav button[aria-current="page"]{color:var(--acc);font-weight:600;background:var(--acc-soft)}
+html.mw900 .stats{grid-template-columns:1fr 1fr}
+html.mw900 .stat{padding:12px 14px}
+html.mw900 .stat b{font-size:22px!important}
+html.mw900 .kpis{grid-template-columns:1fr 1fr}
+html.mw900 .kpi{padding:12px 14px}
+html.mw900 .kpi b{font-size:22px}
+html.mw900 #itable thead{display:none}
+html.mw900 #itable table,html.mw900 #itable tbody{display:block;min-width:0!important;width:100%}
+html.mw900 #itable tr{display:grid;width:100%;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n p" "c k" "s s" "a a";gap:6px 12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center}
+html.mw900 #itable .pname{min-width:0;flex-wrap:nowrap}
+html.mw900 #itable .pname span{min-width:0;overflow-wrap:anywhere}
+html.mw900 #itable td{min-width:0;padding:0!important;border:0!important;text-align:left}
+html.mw900 #itable td:nth-child(1){grid-area:n}
+html.mw900 #itable td:nth-child(2){grid-area:c;color:var(--muted);font-size:12.5px}
+html.mw900 #itable td:nth-child(3){grid-area:p;text-align:right;font-weight:700;font-size:16px}
+html.mw900 #itable td:nth-child(4){grid-area:k;text-align:right;color:var(--muted);font-size:12.5px}
+html.mw900 #itable td:nth-child(4):before{content:"Costo ";}
+html.mw900 #itable td:nth-child(5){grid-area:s;font-size:13px}
+html.mw900 #itable td:nth-child(5):before{content:"Stock ";color:var(--muted)}
+html.mw900 #itable td:nth-child(6){grid-area:a}
+html.mw900 .acts{flex-wrap:wrap;justify-content:flex-start}
+html.mw900 .tw{overflow-x:auto}
+html.mw900 .addf{grid-template-columns:1fr 1fr}
+html.mw900 .cday small:not(.ce){display:none}
+html.mw900 .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
 </style>
 
 <div class="login" id="login" hidden>
@@ -486,6 +566,7 @@ tr:last-child td{border-bottom:0}
       <section id="v-ajustes" hidden><div id="ajustesc" style="display:flex;flex-direction:column;gap:16px"></div></section>
     </div>
   </div>
+  <nav class="bnav" id="bnav" aria-label="Navegación"></nav>
 </div>
 
 <div class="ov" id="ov" hidden><div class="mbox" id="mbox"></div></div>
@@ -1308,6 +1389,20 @@ $("open-cat").onclick=$("top-cat").onclick=function(){showCat(true)};
 $("cat-login").onclick=$("top-login").onclick=function(){showCat(false);var p=$("pin");if(p)p.focus()};
 $("cat-q").oninput=function(){CATQ=this.value;drawCatalog()};
 $("cat-chips").onclick=function(e){var b=e.target.closest("[data-cc]");if(b){CATC=b.getAttribute("data-cc");drawCatalog()}};
+
+/* ---------- navegación inferior y ajuste automático al celular ---------- */
+var BN_ICONS={tienda:'<path d="M6 7h12l-1 13H7L6 7zM9 7a3 3 0 0 1 6 0"/>',cotizacion:'<path d="M7 3h7l4 4v14H7V3zM14 3v4h4M9.5 12h5M9.5 16h5"/>',caja:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',inventario:'<path d="M3 8l9-5 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5M12 13v8"/>',gastos:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6"/>',historial:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',dashboard:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',mas:'<path d="M4 7h16M4 12h16M4 17h16"/>'};
+function drawBnav(){var b=$("bnav");if(!b||!cur)return;var order=["tienda","cotizacion","caja","inventario","gastos","historial","dashboard"],items=order.filter(function(v){return can(v)}).slice(0,4);
+ b.innerHTML=items.map(function(v){return '<button data-bn="'+v+'"'+(v===view?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+BN_ICONS[v]+'</svg><span>'+VIEWS[v]+'</span></button>'}).join("")+
+  '<button data-bn="mas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+BN_ICONS.mas+'</svg><span>Más</span></button>'}
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-bn]");if(!b)return;var v=b.getAttribute("data-bn");if(v==="mas")$("burger").click();else go(v)});
+var _render2=render;render=function(){_render2();drawBnav()};
+/* si el celular abre la página en "modo computador", la acomodamos como celular */
+function fitMobile(){var de=document.documentElement,vv=window.visualViewport,s=vv&&vv.scale?vv.scale:1,iw=window.innerWidth,real=s<0.8?Math.round(iw*s):Math.min(iw,screen.width);
+ de.style.zoom="";[460,560,600,700,900,1000].forEach(function(n){de.classList.remove("mw"+n)});de.classList.remove("forcemob");
+ var touch=(navigator.maxTouchPoints||0)>0||(window.matchMedia&&matchMedia("(pointer:coarse)").matches);
+ if(touch&&iw>=900&&real<=560&&real>=280){de.classList.add("forcemob");de.style.zoom=String(iw/real);[460,560,600,700,900,1000].forEach(function(n){if(real<=n)de.classList.add("mw"+n)})}}
+fitMobile();var _fr=null;window.addEventListener("resize",function(){clearTimeout(_fr);_fr=setTimeout(fitMobile,250)});window.addEventListener("orientationchange",function(){setTimeout(fitMobile,300)});
 
 Array.prototype.forEach.call(document.querySelectorAll("img[data-logo]"),function(i){i.src=LOGO_URI});
 

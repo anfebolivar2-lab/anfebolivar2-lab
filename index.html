@@ -1419,7 +1419,7 @@ var LOGO_URI="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwQDAwQ
 /* ---------- instalar, APK y avisos de actualización ---------- */
 (function(){
  var web=/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname),standalone=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
- var apk=$("apk-dl");if(apk&&(!web||standalone))apk.hidden=true;
+ var cl=$("cloud-open");if(cl&&!web)cl.hidden=true;var apk=$("apk-dl");if(apk&&(!web||standalone))apk.hidden=true;
  if(standalone&&$("pwa-install"))$("pwa-install").hidden=true;
  var dp=null;
  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;if(!standalone&&$("pwa-install"))$("pwa-install").hidden=false});

@@ -2,7 +2,7 @@
 // para que todos los celulares vean lo mismo.
 // Variables de entorno: SYNC_CODE (código de la tienda) y BLOB_READ_WRITE_TOKEN (la pone Vercel al crear el almacenamiento).
 const crypto = require("crypto");
-const { get, put, BlobPreconditionFailedError } = require("@vercel/blob");
+const { get, put, del, BlobPreconditionFailedError } = require("@vercel/blob");
 
 const PATH = "tienda-maria/estado.json";
 const MAX_BYTES = 4000000;
@@ -85,6 +85,10 @@ module.exports = async function handler(req, res) {
         }
         throw e;
       }
+    }
+    if (req.method === "DELETE") {
+      await del(PATH);
+      return res.status(200).json({ ok: true });
     }
     return res.status(405).json({ error: "metodo" });
   } catch (e) {

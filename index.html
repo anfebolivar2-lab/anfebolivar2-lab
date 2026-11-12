@@ -508,7 +508,7 @@ html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
             <div class="pstep"><h3><span>2</span> ¿Cuánto te costó?</h3>
               <label>Lo que pagaste por la CAJA completa ($)<input id="a-bk" type="text" inputmode="numeric" data-money="1" placeholder="Ej. 8.900" required><small class="ex">Ejemplo: la caja de chicles te costó $8.900, escribe 8.900.</small></label>
               <label>¿Cuántas unidades trae esa caja?<input id="a-bq" type="text" inputmode="numeric" data-money="1" value="1" required><small class="ex">Ejemplo: la caja trae 12 chicles, escribe 12. Si lo compras suelto, deja 1.</small></label>
-              <input type="hidden" id="a-k" data-money="1">
+              <label>Costo de cada unidad ($)<input id="a-k" type="text" inputmode="numeric" data-money="1" placeholder="Se calcula solo"><small class="ex">Se calcula solo con lo de arriba. También puedes escribirlo tú si ya sabes cuánto te cuesta cada una.</small></label>
               <p class="live" id="a-live1"></p>
             </div>
             <div class="pstep"><h3><span>3</span> ¿A cómo lo vas a vender?</h3>
@@ -1324,9 +1324,10 @@ if(!S.settings.clean2){var maria=S.users.filter(function(u){return u.name==="Mar
 
 /* ---------- inventario: costo por caja -> costo por unidad ---------- */
 function unitCost(bk,bq){return bq>0?Math.round(bk/bq):0}
-function recalcAdd(){var bk=nm("a-bk"),bq=Math.max(1,nm("a-bq")),k=unitCost(bk,bq),p=nm("a-p"),s=nm("a-s"),t="";$("a-k").value=bk>0?k:"";
- $("a-live1").textContent=bk>0?"Cada unidad te cuesta "+cop(k)+(bq>1?" ("+cop(bk)+" ÷ "+bq+").":"."):"";
- if(bk>0&&p>0){t="Ganancia por unidad: "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%";if(s>0)t+=" · si vendes las "+s+" unidades ganas "+cop((p-k)*s);if(p<k)t+=" · Cuidado: vendes por debajo del costo."}
+function recalcAdd(ev){var id=ev&&ev.target?ev.target.id:"",bq=Math.max(1,nm("a-bq")),bk,k,p=nm("a-p"),s=nm("a-s"),t="";
+ if(id==="a-k"){k=Math.round(nm("a-k"));bk=k*bq;$("a-bk").value=k>0?bk:""}else{bk=nm("a-bk");k=unitCost(bk,bq);$("a-k").value=bk>0?k:""}
+ $("a-live1").textContent=k>0?"Cada unidad te cuesta "+cop(k)+(bq>1?" ("+cop(bk)+" ÷ "+bq+").":"."):"";
+ if(k>0&&p>0){t="Ganancia por unidad: "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%";if(s>0)t+=" · si vendes las "+s+" unidades ganas "+cop((p-k)*s);if(p<k)t+=" · Cuidado: vendes por debajo del costo."}
  $("alive").textContent=t}
 $("addf").onsubmit=function(e){e.preventDefault();if(!mgr())return;var n=$("a-n").value.trim(),c=$("a-c").value.trim();if(!n||!c)return;
  var bk=Math.round(nm("a-bk")),bq=Math.max(1,Math.round(nm("a-bq")));
@@ -1338,14 +1339,14 @@ function entryCalc(){var x=find(Number($("en-id").value)),c=Math.max(0,nm("en-c"
 function entryModal(id){var x=find(id),bq=x.bq||1,bk=x.bk||x.k*bq;modal('<div class="mh"><h3>Entrada de mercancía</h3><button class="x" data-close aria-label="Cerrar">×</button></div><p class="hint" style="margin:0"><b>'+esc(x.n)+'</b> · stock actual '+x.stock+'</p><input type="hidden" id="en-id" value="'+id+'"><div class="grid2"><label>Cajas o paquetes que llegaron<input id="en-c" type="text" inputmode="numeric" data-money="1" value="1"></label><label>Unidades que trae cada caja<input id="en-bq" type="text" inputmode="numeric" data-money="1" value="'+bq+'"></label></div><label>Cuánto pagaste por cada caja o paquete<input id="en-bk" type="text" inputmode="numeric" data-money="1" value="'+bk+'"></label><p class="hint" id="en-sum" style="margin:0"></p><button class="btn acc big" id="en-ok">Guardar</button>');entryCalc();
  $("en-ok").onclick=function(){var c=Math.round(nm("en-c")),bq2=Math.max(1,Math.round(nm("en-bq"))),bk2=Math.round(nm("en-bk")),u=c*bq2;if(u<=0){$("en-c").focus();return}
   var uk=unitCost(bk2,bq2);x.k=(x.stock+u)>0?Math.round((x.stock*x.k+u*uk)/(x.stock+u)):uk;x.stock+=u;x.bk=bk2;x.bq=bq2;save();closeModal();render();toast("Entrada registrada: +"+u+" de "+x.n+".")}}
-function editCalc(){var bk=nm("d-bk"),bq=Math.max(1,nm("d-bq"));$("d-kc").value=bk>0?unitCost(bk,bq):""}
-function editCalc(){var bk=nm("d-bk"),bq=Math.max(1,nm("d-bq")),k=unitCost(bk,bq),p=nm("d-p"),s=nm("d-s");$("d-kc").value=bk>0?k:"";
- $("d-live1").textContent=bk>0?"Cada unidad te cuesta "+cop(k)+(bq>1?" ("+cop(bk)+" ÷ "+bq+").":"."):"";
- $("d-live2").textContent=(bk>0&&p>0)?"Ganancia por unidad: "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%"+(s>0?" · si vendes las "+s+" unidades ganas "+cop((p-k)*s):"")+(p<k?" · Cuidado: vendes por debajo del costo.":""):""}
+function editCalc(id){var bq=Math.max(1,nm("d-bq")),bk,k,p=nm("d-p"),s=nm("d-s");
+ if(id==="d-kc"){k=Math.round(nm("d-kc"));bk=k*bq;$("d-bk").value=k>0?bk:""}else{bk=nm("d-bk");k=unitCost(bk,bq);$("d-kc").value=bk>0?k:""}
+ $("d-live1").textContent=k>0?"Cada unidad te cuesta "+cop(k)+(bq>1?" ("+cop(bk)+" ÷ "+bq+").":"."):"";
+ $("d-live2").textContent=(k>0&&p>0)?"Ganancia por unidad: "+cop(p-k)+" · margen "+Math.round((p-k)/p*100)+"%"+(s>0?" · si vendes las "+s+" unidades ganas "+cop((p-k)*s):"")+(p<k?" · Cuidado: vendes por debajo del costo.":""):""}
 function editModal(id){var x=find(id),bq=x.bq||1,bk=x.bk||x.k;
  modal('<div class="mh"><h3>Editar producto</h3><button class="x" data-close aria-label="Cerrar">×</button></div><div class="pform">'+
   '<div class="pstep"><h3><span>1</span> ¿Qué producto es?</h3><label>Nombre del producto<input id="d-n" value="'+esc(x.n)+'"></label><label>Categoría<input id="d-c" list="cats" value="'+esc(x.c)+'"></label></div>'+
-  '<div class="pstep"><h3><span>2</span> ¿Cuánto te costó?</h3><label>Lo que pagaste por la CAJA completa ($)<input id="d-bk" type="text" inputmode="numeric" data-money="1" value="'+bk+'"><small class="ex">Ejemplo: la caja te costó $8.900, escribe 8.900.</small></label><label>¿Cuántas unidades trae esa caja?<input id="d-bq" type="text" inputmode="numeric" data-money="1" value="'+bq+'"><small class="ex">Ejemplo: trae 12, escribe 12. Si lo compras suelto, deja 1.</small></label><input type="hidden" id="d-kc" data-money="1"><p class="live" id="d-live1"></p></div>'+
+  '<div class="pstep"><h3><span>2</span> ¿Cuánto te costó?</h3><label>Lo que pagaste por la CAJA completa ($)<input id="d-bk" type="text" inputmode="numeric" data-money="1" value="'+bk+'"><small class="ex">Ejemplo: la caja te costó $8.900, escribe 8.900.</small></label><label>¿Cuántas unidades trae esa caja?<input id="d-bq" type="text" inputmode="numeric" data-money="1" value="'+bq+'"><small class="ex">Ejemplo: trae 12, escribe 12. Si lo compras suelto, deja 1.</small></label><label>Costo de cada unidad ($)<input id="d-kc" type="text" inputmode="numeric" data-money="1"><small class="ex">Se calcula solo. También puedes escribirlo tú.</small></label><p class="live" id="d-live1"></p></div>'+
   '<div class="pstep"><h3><span>3</span> ¿A cómo lo vendes?</h3><label>Precio de venta de CADA unidad ($)<input id="d-p" type="text" inputmode="numeric" data-money="1" value="'+x.p+'"><small class="ex">Ejemplo: cada chicle a $1.200, escribe 1.200.</small></label><p class="live" id="d-live2"></p></div>'+
   '<div class="pstep"><h3><span>4</span> ¿Cuánto tienes y cuándo te aviso?</h3><label>Unidades que tienes ahora<input id="d-s" type="text" inputmode="numeric" data-money="1" value="'+x.stock+'"><small class="ex">Si el conteo no coincide, corrígelo aquí.</small></label><label>Avísame cuando queden<input id="d-al" type="text" inputmode="numeric" data-money="1" value="'+x.al+'"><small class="ex">Ejemplo: 5. Cuando queden 5 o menos te sale un aviso.</small></label></div>'+
   '<details class="pmore"'+(x.m!=="unit"?' open':'')+'><summary>Más opciones (precio por pack, foto, código)</summary>'+
@@ -1357,7 +1358,7 @@ function editModal(id){var x=find(id),bq=x.bq||1,bk=x.bk||x.k;
  editCalc();var sync=function(){var u=$("d-m").value==="unit";$("d-qw").hidden=$("d-pw").hidden=u};$("d-m").onchange=sync;sync();
  $("d-ok").onclick=function(){var m=$("d-m").value;if(m!=="unit"&&!(nm("d-q")>1&&nm("d-pp")>0)){toast("Completa cuántas unidades forman el pack y su precio.");return}
   readPhoto($("d-f").files[0],function(img){var bk2=Math.round(nm("d-bk")),bq2=Math.max(1,Math.round(nm("d-bq")));x.n=$("d-n").value.trim()||x.n;x.c=$("d-c").value.trim()||x.c;x.p=Math.round(nm("d-p"));x.bk=bk2;x.bq=bq2;x.k=unitCost(bk2,bq2);x.al=Math.round(nm("d-al"));x.stock=Math.max(0,Math.round(nm("d-s")));x.m=m;x.mq=m==="unit"?0:Math.round(nm("d-q"));x.mp=m==="unit"?0:Math.round(nm("d-pp"));x.cd=$("d-cd").value.trim();if(img)x.img=img;save();closeModal();render();toast("Producto guardado.")})}}
-document.addEventListener("input",function(e){var i=e.target.id;if(i==="d-bk"||i==="d-bq"||i==="d-p"||i==="d-s")editCalc();else if(i==="en-c"||i==="en-bq"||i==="en-bk")entryCalc()});
+document.addEventListener("input",function(e){var i=e.target.id;if(i==="d-bk"||i==="d-bq"||i==="d-p"||i==="d-s"||i==="d-kc")editCalc(i);else if(i==="en-c"||i==="en-bq"||i==="en-bk")entryCalc()});
 
 /* ---------- cotizaciones ---------- */
 var Q={n:"",t:"",d:7,p:"",note:"",lines:[],prod:"",qty:"1"};

@@ -1,5 +1,5 @@
-// Tienda María: se guarda la app para abrirla rápido y sin internet. Versión: 53942814fa
-var V="tm-53942814fa";
+// Tienda María: se guarda la app para abrirla rápido y sin internet. Versión: 57fc7a466d
+var V="tm-57fc7a466d";
 var SHELL=["/","/manifest.webmanifest","/icon-192.png","/icon-512.png","/favicon-32.png"];
 self.addEventListener("install",function(e){e.waitUntil(caches.open(V).then(function(c){return c.addAll(SHELL)}))});
 self.addEventListener("message",function(e){if(e.data==="SKIP_WAITING")self.skipWaiting()});

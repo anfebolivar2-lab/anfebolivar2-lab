@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tienda María</title>
+<meta name="theme-color" content="#7a2f57">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tienda María">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Inter:wght@400;500;600&display=swap">
 <style>
 /* Layout: quiet gallery look (white, plum accent, thin Jost type, big photos, hairlines) applied to the sales system. Left sidebar with vertical menu; dashboard with accent title bars. */
@@ -241,6 +248,26 @@ tr:last-child td{border-bottom:0}
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:39}
 }
 @media (max-width:460px){.dn{grid-template-columns:1fr}.dgrid{grid-template-columns:1fr}}
+.login{background:var(--bg)}
+.lbox2{width:min(430px,100%);border:1px solid var(--line);border-radius:22px;overflow:hidden;background:var(--card);box-shadow:0 10px 40px rgba(0,0,0,.06)}
+.lhead{background:#7a2f57;color:#fff;text-align:center;padding:30px 20px 26px}
+.mlogo{display:inline-grid;place-items:center;background:#fff;border:3px solid #e0a030;border-radius:26px;padding:7px;margin-bottom:14px}
+.mlogo svg{display:block;border-radius:18px}
+.lhead .wm{color:#fff;font-size:24px;letter-spacing:.14em;margin:0}
+.lhead p{margin:8px 0 0;color:#f0d9a8;font-size:14px}
+.lbody{padding:24px 24px 26px;display:flex;flex-direction:column;gap:14px}
+.lbody h2{font-family:var(--display);font-weight:400;font-size:30px;margin:0;color:var(--acc-ink)}
+.lsep{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+.lsep:before,.lsep:after{content:"";flex:1;height:1px;background:var(--line)}
+.lopt{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:14px;padding:14px;background:transparent;color:var(--ink);text-align:left;text-decoration:none;width:100%;font:inherit}
+.lopt:hover{border-color:var(--acc)}
+.lic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--blue-soft);color:var(--acc);flex:none}
+.lic.ok{background:#e1f3e8;color:#1f7a4d}
+.ltx{display:flex;flex-direction:column;flex:1;min-width:0}.ltx b{font-size:16px}.ltx small{color:var(--muted);font-size:13px}
+.lgo{color:var(--muted);flex:none}
+.updbar{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:60;background:var(--acc);color:var(--on-acc);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:520px;margin:0 auto}
+.updbar span{flex:1;font-size:14px}.updbar button{border:0;background:var(--on-acc);color:var(--acc);border-radius:99px;padding:8px 16px;font-weight:600}
+.updbar .x2{background:transparent;color:inherit;padding:6px 8px;font-size:18px}
 .expbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.expbar span{color:var(--muted);font-size:12.5px}
 .ctool{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;align-items:center;margin-bottom:10px}.cnav{display:flex;gap:6px;align-items:center}.cnav input{width:auto}
 .ctitle{font-family:var(--display);font-weight:400;font-size:22px;margin:6px 0 14px}.ctitle::first-letter{text-transform:uppercase}
@@ -267,14 +294,25 @@ tr:last-child td{border-bottom:0}
 </style>
 
 <div class="login" id="login" hidden>
-  <div class="lbox">
-    <div class="wm">Tienda María<small>Golosinas y snacks</small></div>
-    <p class="hint" style="margin:0">Elige tu usuario y escribe tu PIN.</p>
-    <div class="users" id="ulist"></div>
-    <label>PIN<input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••"></label>
-    <p class="err" id="lerr"></p>
-    <button class="btn acc big" id="enter">Entrar</button>
-    <p class="hint" id="lhint"></p>
+  <div class="lbox2">
+    <div class="lhead">
+      <span class="mlogo" aria-hidden="true"><svg viewBox="0 0 512 512" width="76" height="76"><rect width="512" height="512" rx="116" fill="#7a2f57"/><path d="M146 384V168L256 296 366 168V384" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/><circle cx="386" cy="128" r="26" fill="#e0a030"/></svg></span>
+      <h1 class="wm">Tienda María</h1>
+      <p>Golosinas y snacks</p>
+    </div>
+    <div class="lbody">
+      <h2>Iniciar sesión</h2>
+      <p class="hint" style="margin:0">Elige tu usuario y escribe tu PIN.</p>
+      <div class="users" id="ulist"></div>
+      <label>PIN<input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••"></label>
+      <p class="err" id="lerr"></p>
+      <button class="btn acc big" id="enter">Entrar</button>
+      <p class="hint" id="lhint"></p>
+      <div class="lsep"><span>O también</span></div>
+      <button class="lopt" id="pwa-install" type="button" hidden><span class="lic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 8v6m-3-3l3 3 3-3"/></svg></span><span class="ltx"><b>Instalar en el celular</b><small>Agrega Tienda María a tu pantalla de inicio</small></span></button>
+      <a class="lopt" id="apk-dl" href="/Tienda-Maria.apk" download="Tienda-Maria.apk"><span class="lic ok"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5a1.5 1.5 0 0 0 3 0V19h2v3.5a1.5 1.5 0 0 0 3 0V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8A1.5 1.5 0 0 0 2 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 3.5 8zm17 0A1.5 1.5 0 0 0 19 9.5v7a1.5 1.5 0 0 0 3 0v-7A1.5 1.5 0 0 0 20.5 8zm-4.97-5.84l1.3-1.3a.5.5 0 0 0-.7-.7l-1.48 1.48A5.97 5.97 0 0 0 12 1c-.96 0-1.86.23-2.66.64L7.85.15a.5.5 0 0 0-.7.7l1.3 1.3A5.99 5.99 0 0 0 6 7h12a5.99 5.99 0 0 0-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg></span><span class="ltx"><b>APK Android</b><small>Descargar Tienda-Maria.apk (última versión)</small></span><span class="lgo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></span></a>
+      <p class="hint" id="ios-hint" hidden>En iPhone: toca Compartir y luego "Agregar a pantalla de inicio".</p>
+    </div>
   </div>
 </div>
 
@@ -1134,6 +1172,31 @@ document.addEventListener("change",function(e){var s=e.target;if(!s.getAttribute
  u.role=s.value;save();if(cur&&u.id===cur.id){cur=u;start()}else drawAjustes();toast("Perfil de "+u.name+": "+u.role)});
 /* un solo usuario: María */
 if(!S.settings.clean2){var maria=S.users.filter(function(u){return u.name==="María"})[0]||{id:S.uid||5,name:"María",role:"Administrador",pin:"4321"};maria.role="Administrador";S.users=[maria];S.uid=Math.max(S.uid||1,maria.id+1);S.settings.clean2=1;save()}
+
+/* ---------- instalar, APK y avisos de actualización ---------- */
+(function(){
+ var web=/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname),standalone=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+ var apk=$("apk-dl");if(apk&&(!web||standalone))apk.hidden=true;
+ if(standalone&&$("pwa-install"))$("pwa-install").hidden=true;
+ var dp=null;
+ window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;if(!standalone&&$("pwa-install"))$("pwa-install").hidden=false});
+ window.addEventListener("appinstalled",function(){if($("pwa-install"))$("pwa-install").hidden=true;toast("Tienda María instalada.")});
+ if($("pwa-install"))$("pwa-install").onclick=function(){if(dp){dp.prompt();dp=null;this.hidden=true}};
+ if(web&&!standalone&&/iphone|ipad|ipod/i.test(navigator.userAgent)&&$("ios-hint"))$("ios-hint").hidden=false;
+ if(!web||!("serviceWorker" in navigator))return;
+ var reg=null,want=false;
+ function banner(w){if($("updbar"))return;var d=document.createElement("div");d.className="updbar";d.id="updbar";d.setAttribute("role","status");
+  d.innerHTML='<span><b>Hay una versión nueva de Tienda María.</b><br>Actualiza para tener las últimas mejoras.</span><button type="button" id="updgo">Actualizar</button><button type="button" class="x2" id="updno" aria-label="Más tarde">✕</button>';
+  document.body.appendChild(d);$("updno").onclick=function(){d.remove()};
+  $("updgo").onclick=function(){want=true;$("updgo").textContent="Actualizando...";try{w.postMessage("SKIP_WAITING")}catch(e){location.reload()};setTimeout(function(){location.reload()},4000)};
+  try{if(window.Notification&&Notification.permission==="granted"&&reg)reg.showNotification("Tienda María",{body:"Hay una versión nueva. Ábrela para actualizar.",icon:"/icon-192.png",tag:"upd"})}catch(e){}}
+ navigator.serviceWorker.addEventListener("controllerchange",function(){if(want)location.reload()});
+ navigator.serviceWorker.register("/sw.js").then(function(r){reg=r;
+  if(r.waiting&&navigator.serviceWorker.controller)banner(r.waiting);
+  r.addEventListener("updatefound",function(){var w=r.installing;if(!w)return;w.addEventListener("statechange",function(){if(w.state==="installed"&&navigator.serviceWorker.controller)banner(w)})});
+  setInterval(function(){r.update().catch(function(){})},15*60*1000)}).catch(function(){});
+ document.addEventListener("visibilitychange",function(){if(!document.hidden&&reg)reg.update().catch(function(){})});
+})();
 
 applyTheme();
 var sid=null;try{sid=Number(localStorage.getItem(SES))}catch(e){}

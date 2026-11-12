@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Tienda María",
+  "short_name": "Tienda María",
+  "description": "Ventas, inventario, gastos y caja de Tienda María",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbfbfc",
+  "theme_color": "#7a2f57",
+  "lang": "es-CO",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

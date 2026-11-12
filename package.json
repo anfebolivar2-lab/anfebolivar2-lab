@@ -1,0 +1,12 @@
+{
+  "name": "tienda-altiplano",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de venta, inventario, gastos y asistente de una tienda de golosinas",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

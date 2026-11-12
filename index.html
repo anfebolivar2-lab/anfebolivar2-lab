@@ -439,6 +439,7 @@ html.mw900 .updbar{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
   <main class="catmain">
     <h2>Catálogo</h2>
     <p class="hint" style="margin:0 0 12px">Productos y precios de Tienda María</p>
+    <p class="hint" id="cat-note" style="margin:0 0 10px"></p>
     <input id="cat-q" type="search" placeholder="Buscar producto..." aria-label="Buscar producto">
     <div class="chips" id="cat-chips" style="margin:12px 0"></div>
     <div class="catgrid" id="cat-grid"></div>
@@ -1444,12 +1445,20 @@ var LOGO_URI="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwQDAwQ
 
 /* ---------- catálogo para clientes ---------- */
 var CATQ="",CATC="Todos";
-function drawCatalog(){var cs=["Todos"].concat(cats()),q=norm(CATQ.trim()),l=S.items.filter(function(x){return(CATC==="Todos"||x.c===CATC)&&(!q||norm(x.n+" "+x.c).indexOf(q)>=0)});
+var CATR=null,CATL=false;
+function catItems(){return CATR?CATR.items.map(function(x){return {id:x.id,n:x.n,c:x.c,p:x.p,m:x.m,mq:x.mq,mp:x.mp,stock:x.ok?1:0,bg:x.bg,fg:x.fg,img:x.img||""}}):S.items}
+function drawCatalog(){var all=catItems(),cs=["Todos"],q=norm(CATQ.trim());all.forEach(function(x){if(cs.indexOf(x.c)<0)cs.push(x.c)});
+ var l=all.filter(function(x){return(CATC==="Todos"||x.c===CATC)&&(!q||norm(x.n+" "+x.c).indexOf(q)>=0)});
  $("cat-chips").innerHTML=cs.map(function(c){return '<button class="fch" data-cc="'+esc(c)+'" aria-pressed="'+(c===CATC)+'">'+esc(c)+'</button>'}).join("");
- $("cat-grid").innerHTML=l.length?l.map(function(x){var pk=x.m==="pack"&&x.mq>1&&x.mp>0?'Pack x'+x.mq+': '+cop(x.mp):x.m==="mayor"&&x.mq>1&&x.mp>0?'Desde '+x.mq+' und: '+cop(x.mp)+' c/u':'';
-  return '<div class="cp">'+thumb(x)+'<b>'+esc(x.n)+'</b><span class="pr">'+cop(x.p)+'</span>'+(pk?'<small>'+esc(pk)+'</small>':'')+'<small>'+(x.stock>0?'Disponible':'Agotado')+'</small></div>'}).join(""):'<p class="empty">No hay productos con ese nombre.</p>';
- var wa=$("cat-wa"),tel=String(S.settings.wa||"").replace(/\D/g,"");wa.hidden=!tel;if(tel)wa.href=waLink("Hola, quiero hacer un pedido en "+S.settings.store+".",tel)}
-function showCat(on){$("catv").hidden=!on;$("login").hidden=on;if(on){drawCatalog();window.scrollTo(0,0)}}
+ $("cat-note").textContent=CATL?"Cargando precios...":(CATR?"":"Estos productos son los guardados en este celular. Conecta este celular a la nube para que el catálogo muestre los mismos precios en cualquier celular.");
+ $("cat-grid").innerHTML=CATL?'':(l.length?l.map(function(x){var pk=x.m==="pack"&&x.mq>1&&x.mp>0?'Pack x'+x.mq+': '+cop(x.mp):x.m==="mayor"&&x.mq>1&&x.mp>0?'Desde '+x.mq+' und: '+cop(x.mp)+' c/u':'';
+  return '<div class="cp">'+thumb(x)+'<b>'+esc(x.n)+'</b><span class="pr">'+cop(x.p)+'</span>'+(pk?'<small>'+esc(pk)+'</small>':'')+'<small>'+(x.stock>0?'Disponible':'Agotado')+'</small></div>'}).join(""):'<p class="empty">No hay productos con ese nombre.</p>');
+ var wa=$("cat-wa"),tel=String((CATR&&CATR.wa)||S.settings.wa||"").replace(/\D/g,"");wa.hidden=!tel;if(tel)wa.href=waLink("Hola, quiero hacer un pedido en "+((CATR&&CATR.store)||S.settings.store)+".",tel)}
+function loadCat(){var web=/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname);if(!web){CATR=null;CATL=false;drawCatalog();return}CATL=true;drawCatalog();
+ var done=false,fin=function(r){if(done)return;done=true;CATR=r;CATL=false;if(!$("catv").hidden)drawCatalog()};
+ setTimeout(function(){fin(null)},6000);
+ fetch("/api/catalog",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){fin(j&&j.items&&j.items.length?j:null)}).catch(function(){fin(null)})}
+function showCat(on){$("catv").hidden=!on;$("login").hidden=on;if(on){window.scrollTo(0,0);loadCat()}}
 $("open-cat").onclick=$("top-cat").onclick=function(){showCat(true)};
 $("cat-login").onclick=$("top-login").onclick=function(){showCat(false);var p=$("pin");if(p)p.focus()};
 $("cat-q").oninput=function(){CATQ=this.value;drawCatalog()};
@@ -1558,9 +1567,12 @@ function cloudChoose(remote){var localHas=S.sales.length||S.expenses.length||S.i
 document.addEventListener("click",function(e){var id=e.target.id;
  if(id==="cloud-open"||(e.target.closest&&e.target.closest("#cloud-open")))cloudModal();
  else if(id==="cl-sync"){SY.dirty=true;syPush().then(function(){toast(SY.err||"Sincronizado.")});}
+ else if(id==="cl-link"){var lk=location.origin+"/#nube="+SY.code;try{navigator.clipboard.writeText(lk).then(function(){toast("Enlace copiado. Envíalo por WhatsApp al otro celular.")},function(){prompt("Copia este enlace:",lk)})}catch(x){prompt("Copia este enlace:",lk)}}
  else if(id==="cl-off"){var b=e.target;if(b.getAttribute("data-sure")){SY.on=false;SY.code="";SY.rev="";SY.h=null;SY.dirty=false;try{localStorage.removeItem(SK)}catch(x){}syBadge();drawAjustes();toast("Este celular ya no está conectado a la nube.")}else{b.setAttribute("data-sure","1");b.textContent="¿Seguro? Toca otra vez"}}});
-function cloudCard(){return '<div class="card"><div class="ch"><h2>Nube (misma información en todos los celulares)</h2></div>'+(SY.on?'<p style="margin:0 0 10px"><b>Este celular está conectado.</b> '+(SY.err?esc(SY.err):SY.dirty?'Guardando cambios...':'Todo guardado en la nube.')+(SY.last?' Última revisión: '+fmtT(SY.last)+'.':'')+'</p><div class="tools"><button class="btn sm" id="cl-sync" type="button">Sincronizar ahora</button><button class="btn red sm" id="cl-off" type="button">Desconectar este celular</button></div>':'<p style="margin:0 0 10px">Este celular <b>no está conectado</b>. Conéctalo para ver y guardar la misma información que en tus otros celulares.</p><button class="btn acc sm" id="cloud-open" type="button">Conectar con la nube</button>')+'</div>'}
+function cloudCard(){return '<div class="card"><div class="ch"><h2>Nube (misma información en todos los celulares)</h2></div>'+(SY.on?'<p style="margin:0 0 10px"><b>Este celular está conectado.</b> '+(SY.err?esc(SY.err):SY.dirty?'Guardando cambios...':'Todo guardado en la nube.')+(SY.last?' Última revisión: '+fmtT(SY.last)+'.':'')+'</p><div class="tools"><button class="btn sm" id="cl-sync" type="button">Sincronizar ahora</button><button class="btn sm" id="cl-link" type="button">Copiar enlace para conectar otro celular</button><button class="btn red sm" id="cl-off" type="button">Desconectar este celular</button></div>':'<p style="margin:0 0 10px">Este celular <b>no está conectado</b>. Conéctalo para ver y guardar la misma información que en tus otros celulares.</p><button class="btn acc sm" id="cloud-open" type="button">Conectar con la nube</button>')+'</div>'}
 syBadge();if(SY.on)setTimeout(syPull,1500);
+
+var _hm=/^#nube=([A-Za-z0-9-]+)/.exec(location.hash||"");if(_hm){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(!SY.on)setTimeout(function(){cloudModal();$("cl-code").value=_hm[1]},500)}
 
 Array.prototype.forEach.call(document.querySelectorAll("img[data-logo]"),function(i){i.src=LOGO_URI});
 

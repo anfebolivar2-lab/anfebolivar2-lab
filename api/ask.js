@@ -1,11 +1,13 @@
-// Asistente con IA de la tienda. Función de Vercel que llama a Claude.
+// Asistente con IA de la tienda. Función de Vercel que llama a Gemini (Google) o a Claude (Anthropic).
 // Variables de entorno necesarias en Vercel:
-//   ANTHROPIC_API_KEY  clave de la API de Anthropic (nunca va en la página)
 //   ASSISTANT_CODE     código de acceso que escribe el administrador en Ajustes
-// Opcionales: ASSISTANT_MODEL (por defecto claude-opus-5-5), ASSISTANT_EFFORT (por defecto medium)
+//   GEMINI_API_KEY     clave de Google AI Studio (gratis para empezar). Si existe, se usa Gemini.
+//   ANTHROPIC_API_KEY  alternativa: clave de la API de Anthropic. Solo se usa si no hay GEMINI_API_KEY.
+// Opcionales: ASSISTANT_MODEL (Gemini: gemini-flash-latest; Claude: claude-opus-5-5), ASSISTANT_EFFORT (solo Claude, por defecto medium)
 const crypto = require("crypto");
 const Anthropic = require("@anthropic-ai/sdk");
 
+const GEMINI_MODEL = process.env.ASSISTANT_MODEL || "gemini-flash-latest";
 const MODEL = process.env.ASSISTANT_MODEL || "claude-opus-5-5";
 const EFFORT = process.env.ASSISTANT_EFFORT || "medium";
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -118,6 +120,84 @@ async function run(client, system, messages) {
   return client.messages.create({ ...base, output_config: { effort: EFFORT } });
 }
 
+// Esquema para Gemini (sin additionalProperties).
+const GEMINI_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    answer: { type: "STRING" },
+    charts: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          type: { type: "STRING", enum: ["bar", "hbar", "line", "donut"] },
+          title: { type: "STRING" },
+          labels: { type: "ARRAY", items: { type: "STRING" } },
+          values: { type: "ARRAY", items: { type: "NUMBER" } },
+          money: { type: "BOOLEAN" },
+        },
+        required: ["type", "title", "labels", "values", "money"],
+      },
+    },
+  },
+  required: ["answer", "charts"],
+};
+
+async function runGemini(apiKey, system, body) {
+  const contents = [];
+  (Array.isArray(body.history) ? body.history.slice(-8) : []).forEach((m) => {
+    const role = m && m.role === "assistant" ? "model" : "user";
+    const text = String((m && m.text) || "").slice(0, 1500).trim();
+    if (!text) return;
+    if (!contents.length && role === "model") return;
+    contents.push({ role, parts: [{ text }] });
+  });
+  const question = String(body.question || "").slice(0, 2000).trim();
+  const parts = [];
+  const img = body.image;
+  if (img && IMAGE_TYPES.includes(img.mediaType) && typeof img.data === "string" && img.data.length > 100 && img.data.length <= 4000000) {
+    parts.push({ inlineData: { mimeType: img.mediaType, data: img.data } });
+  }
+  parts.push({ text: question || "Describe esta imagen y dime qué información útil trae para mi tienda." });
+  contents.push({ role: "user", parts });
+  const payload = {
+    systemInstruction: { parts: [{ text: system }] },
+    contents,
+    generationConfig: { responseMimeType: "application/json", responseSchema: GEMINI_SCHEMA, maxOutputTokens: 8000 },
+  };
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 55000);
+  try {
+    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(GEMINI_MODEL) + ":generateContent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify(payload),
+      signal: ctl.signal,
+    });
+    const j = await r.json().catch(() => ({}));
+    return { status: r.status, j };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function readGemini(j) {
+  const cand = j && j.candidates && j.candidates[0];
+  if ((j && j.promptFeedback && j.promptFeedback.blockReason) || (cand && cand.finishReason === "SAFETY")) {
+    return { answer: "No puedo ayudar con esa pregunta. Prueba con otra sobre tu tienda.", charts: [] };
+  }
+  const text = ((cand && cand.content && cand.content.parts) || [])
+    .map((p) => p.text || "")
+    .join("")
+    .trim();
+  try {
+    const o = JSON.parse(text);
+    return { answer: String(o.answer || "").trim() || "No encontré una respuesta.", charts: cleanCharts(o.charts) };
+  } catch (e) {
+    return { answer: text || "No encontré una respuesta.", charts: [] };
+  }
+}
+
 function cleanCharts(list) {
   if (!Array.isArray(list)) return [];
   return list
@@ -156,16 +236,29 @@ function readReply(response) {
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ error: "metodo" });
+  const geminiKey = process.env.GEMINI_API_KEY;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   const code = process.env.ASSISTANT_CODE;
-  if (!apiKey || !code) return res.status(503).json({ error: "sin_configurar" });
+  if ((!geminiKey && !apiKey) || !code) return res.status(503).json({ error: "sin_configurar" });
   const body = parseBody(req);
   if (!same(body.code || "", code)) return res.status(401).json({ error: "codigo" });
   const ip = String((req.headers && req.headers["x-forwarded-for"]) || "").split(",")[0].trim() || "local";
   if (limited(ip)) return res.status(429).json({ error: "limite" });
-  if (body.ping) return res.status(200).json({ ok: true, model: MODEL });
+  if (body.ping) return res.status(200).json({ ok: true, model: geminiKey ? GEMINI_MODEL : MODEL });
 
   const context = JSON.stringify(body.context || {}).slice(0, 40000);
+  if (geminiKey) {
+    try {
+      const out = await runGemini(geminiKey, systemPrompt(context), body);
+      if (out.status === 200) return res.status(200).json(readGemini(out.j));
+      const msg = String((out.j && out.j.error && out.j.error.message) || "");
+      if (out.status === 429) return res.status(429).json({ error: "limite_api" });
+      if (out.status === 401 || out.status === 403 || /API key/i.test(msg)) return res.status(502).json({ error: "clave_invalida" });
+      return res.status(502).json({ error: "api", status: out.status });
+    } catch (e) {
+      return res.status(504).json({ error: "conexion" });
+    }
+  }
   const messages = buildMessages(body);
   const client = new Anthropic({ apiKey, timeout: 55000, maxRetries: 1 });
   try {

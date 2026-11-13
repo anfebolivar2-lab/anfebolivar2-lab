@@ -45,3 +45,7 @@ Variables de entorno en Vercel:
 - `SYNC_CODE`: código de la tienda.
 - `FIREBASE_SERVICE_ACCOUNT` (opcional): JSON de la cuenta de servicio de Firebase. Si existe, el estado se guarda en Firestore (`tienda/estado`). Dejar las reglas de Firestore cerradas (`allow read, write: if false;`), porque el servidor entra con la cuenta de servicio.
 - `BLOB_READ_WRITE_TOKEN`: si no hay Firebase, se usa Vercel Blob.
+
+## Asistente con IA
+
+`/api/ask` usa Gemini si existe `GEMINI_API_KEY` (clave gratuita de Google AI Studio), o Claude si solo existe `ANTHROPIC_API_KEY`. En los dos casos hace falta `ASSISTANT_CODE`, el código que el administrador escribe en Ajustes.

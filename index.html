@@ -1045,7 +1045,7 @@ function aiChart(c){var money=!!c.money,f=money?fk:function(v){return String(Mat
  if(c.type==="donut")return mchart(c.title,svgDonut(items.filter(function(x){return x.v>0})));
  return mchart(c.title,svgH(items,f))}
 function plain(h){return String(h).replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/\s+/g," ").trim()}
-function drawChat(){var ai=true;
+function drawChat(){var ai=!!S.settings.aiCode;
  if(!CHAT.length)CHAT.push({r:"a",h:'Hola, '+esc(cur.name)+'. Soy el asistente de '+esc(S.settings.store)+'. Pregúntame por ventas, ganancias, gastos, inventario o productos y te respondo con gráficos.'+(ai?' También puedes escribir cualquier otra pregunta o adjuntar una imagen.':' Para preguntas libres y para leer imágenes hay que activar la IA en Ajustes.')});
  $("msgs").innerHTML=CHAT.map(function(m){return '<div class="m '+(m.r==="u"?"u":"a")+(m.pending?" pend":"")+'">'+m.h+'</div>'}).join("");
  $("sugs").innerHTML=["¿Cuánto vendí hoy?","¿Qué producto se vende más este mes?","¿Cuál fue mi ganancia este mes?","¿Qué debo pedir al proveedor?","¿Cuánto gasté este mes?","¿Quién vendió más?","¿A qué hora vendo más?","¿Cuánto hay en caja hoy?","Precio Big Bom"].map(function(s){return '<button class="fch" type="button" data-q="'+esc(s)+'">'+esc(s)+'</button>'}).join("");
@@ -1063,6 +1063,7 @@ function ctxData(){var now=new Date(),D=864e5,d0=day0(now),w0=d0-((now.getDay()+
   productosVendidosMes:pm(mon.prod),productosVendidos30d:pm(a30.prod),vendidoPorVendedorMes:mon.sell,porMedioDePagoMes:mon.pm,porDiaSemanaMes:mon.wd,porHoraMes:mon.hr,
   porMes:months,ventasDiarias30d:daily,gastosMesPorCategoria:gc,ultimosGastos:(S.expenses||[]).slice(0,10).map(function(e){return {fecha:new Date(e.ts).toISOString().slice(0,10),concepto:e.concept,categoria:e.cat,monto:e.amt}})}}
 function aiErr(status,err){
+ if(err==="fb_appcheck")return "Firebase está pidiendo App Check para la IA. Usa el código del asistente (Ajustes → Asistente con IA).";
  if(err==="fb_off")return "Falta activar Firebase AI Logic. En la consola de Firebase abre el proyecto Tienda-Maria → AI Logic → Comenzar, y elige Gemini Developer API.";
  if(err==="modelo")return "El modelo de IA no está disponible ahora. Intenta más tarde.";
  if(status===401)return "El código de acceso del asistente no es correcto. Revísalo en Ajustes → Asistente con IA.";
@@ -1077,6 +1078,7 @@ var FBSYS=["Eres el asistente de una tienda pequeña de golosinas y snacks en Co
 function fbLoad(){if(!FBP)FBP=Promise.all([import("https://www.gstatic.com/firebasejs/"+FBV+"/firebase-app.js"),import("https://www.gstatic.com/firebasejs/"+FBV+"/firebase-ai.js")]).then(function(m){var app=m[0].initializeApp(FBC);return {m:m[1],ai:m[1].getAI(app,{backend:new m[1].GoogleAIBackend()})}}).catch(function(e){FBP=null;throw e});return FBP}
 function fbErr(e){var s=String(e&&e.message||e);
  if(/429|quota|RESOURCE_EXHAUSTED/i.test(s))return {status:429,j:{error:"limite_api"}};
+ if(/App Check/i.test(s))return {status:403,j:{error:"fb_appcheck"}};
  if(/403|PERMISSION|API key|API_KEY|has not been used|is disabled|AI Logic/i.test(s))return {status:403,j:{error:"fb_off"}};
  if(/404|not found|not supported/i.test(s))return {status:404,j:{error:"modelo"}};
  return {status:502,j:{error:"api"}}}
@@ -1096,7 +1098,7 @@ function callAI(q,img){var hist=CHAT.filter(function(m){return !m.pending&&m.t})
  if(!S.settings.aiCode)return callFB(q,img,hist);
  return fetch("/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:S.settings.aiCode,question:q,history:hist,image:img,context:ctxData()})}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {status:r.status,j:j}})})}
 function pushAnswer(h,t){CHAT=CHAT.filter(function(m){return !m.pending});CHAT.push({r:"a",h:h,t:t});drawChat()}
-function ask(t){t=t.trim();var img=AIMG;if(!t&&!img||AIBUSY)return;var ai=true,mode=$("amode").value;
+function ask(t){t=t.trim();var img=AIMG;if(!t&&!img||AIBUSY)return;var ai=!!S.settings.aiCode,mode=$("amode").value;
  CHAT.push({r:"u",h:(t?esc(t):"")+(img?'<div class="mimg"><img alt="Imagen adjunta" src="'+img.url+'"></div>':""),t:t||"(imagen adjunta)"});$("cq").value="";clearImg();
  if(!img&&mode!=="ai"){var h=answer(t);if(!(answerMiss&&mode==="auto"&&ai)){pushAnswer(h,plain(h));return}}
  if(!ai){pushAnswer("Para "+(img?"leer imágenes":"contestar esa pregunta")+" necesito la IA, y todavía no está activada. Actívala en <b>Ajustes → Asistente con IA</b>. Mientras tanto puedo contestarte las preguntas comunes de ventas, gastos e inventario.",""); return}
@@ -1111,9 +1113,9 @@ $("apx").onclick=clearImg;
 $("cimg").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);var url=c.toDataURL("image/jpeg",.82);AIMG={url:url,mediaType:"image/jpeg",data:url.split(",")[1]};$("apimg").src=url;$("apname").textContent=f.name;$("apre").hidden=false};im.onerror=function(){toast("No pude leer esa imagen.")};im.src=r.result};r.readAsDataURL(f)};
 $("cf").onsubmit=function(e){e.preventDefault();ask($("cq").value)};
 $("sugs").onclick=function(e){var b=e.target.closest("[data-q]");if(b)ask(b.getAttribute("data-q"))};
-function aiCard(){return '<div class="card"><div class="ch"><h2>Asistente con IA</h2></div><p class="hint" style="margin:0 0 12px">Sirve para preguntar cualquier cosa sobre la tienda y para analizar imágenes, por ejemplo la foto de una factura de proveedor. Usa la inteligencia artificial de Google (Gemini) con Firebase AI Logic. Se envían a ese servicio tu pregunta, la imagen y un resumen de ventas, gastos e inventario, sin nombres ni teléfonos de clientes.</p><div class="addf"><label>Código de acceso (opcional)<input id="ai-c" type="password" autocomplete="off" value="'+esc(S.settings.aiCode||"")+'" placeholder="Déjalo vacío para usar Firebase"></label><button class="btn" id="ai-t" type="button">Probar conexión</button></div><p class="hint" id="ai-m"></p><details class="more"><summary>Cómo activarla (una sola vez)</summary><ol style="margin:8px 0 0;padding-left:18px;line-height:1.7"><li>Entra a console.firebase.google.com y abre el proyecto <b>Tienda-Maria</b>.</li><li>En el menú abre <b>AI Logic</b> y toca <b>Comenzar</b>.</li><li>Elige <b>Gemini Developer API</b> y acepta.</li><li>Vuelve aquí y toca <b>Probar conexión</b>.</li></ol></details></div>'}
+function aiCard(){return '<div class="card"><div class="ch"><h2>Asistente con IA</h2></div><p class="hint" style="margin:0 0 12px">Sirve para preguntar cualquier cosa sobre la tienda y para analizar imágenes, por ejemplo la foto de una factura de proveedor. Usa la inteligencia artificial de Google (Gemini). Se envían a ese servicio tu pregunta, la imagen y un resumen de ventas, gastos e inventario, sin nombres ni teléfonos de clientes.</p><div class="addf"><label>Código de acceso del asistente<input id="ai-c" type="password" autocomplete="off" value="'+esc(S.settings.aiCode||"")+'" placeholder="El mismo que pusiste en Vercel"></label><button class="btn" id="ai-t" type="button">Probar conexión</button></div><p class="hint" id="ai-m"></p><details class="more"><summary>Cómo activarla (una sola vez)</summary><ol style="margin:8px 0 0;padding-left:18px;line-height:1.7"><li>Entra a aistudio.google.com/apikey y crea una clave de API en el proyecto <b>Tienda-Maria</b>.</li><li>En Vercel abre el proyecto <b>tienda-altiplano</b> → Settings → Environment Variables.</li><li>Agrega <b>GEMINI_API_KEY</b> con tu clave y <b>ASSISTANT_CODE</b> con un código que inventes (es la contraseña del asistente). Márcalas como Secret.</li><li>En Deployments toca Redeploy para que tome los cambios.</li><li>Escribe aquí el mismo código y toca Probar conexión.</li></ol></details></div>'}
 function testAI(){var c=$("ai-c").value.trim();S.settings.aiCode=c;save();$("ai-m").textContent="Probando…";
- if(!c){fbRun(FBSYS+"{}",[{role:"user",parts:[{text:"Responde solo: ok"}]}]).then(function(o){$("ai-m").textContent=o.status===200?"Conexión lista con Firebase AI Logic.":aiErr(o.status,o.j&&o.j.error)});return}
+
  fetch("/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:c,ping:true})}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {status:r.status,j:j}})}).then(function(o){$("ai-m").textContent=o.status===200?"Conexión lista. El asistente usará el modelo "+o.j.model+".":aiErr(o.status,o.j&&o.j.error)}).catch(function(){$("ai-m").textContent="Esta prueba solo funciona en la página publicada en Vercel."})}
 /* ---------- ajustes ---------- */
 function drawAjustes(){

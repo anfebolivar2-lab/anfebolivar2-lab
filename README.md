@@ -35,3 +35,13 @@ Mi nombre es Andrés Felipe Bolívar Arias. Tengo 21 años y soy de Neiva. Soy e
 * 💼 [Tu LinkedIn](https://linkedin.com)
 * 📧 [Tu Correo Electrónico](mailto:tu-correo@email.com)
 
+
+## Nube (misma información en todos los celulares)
+
+La API `/api/state` guarda el estado de la tienda y está protegida con el código de la tienda (`SYNC_CODE`).
+
+Variables de entorno en Vercel:
+
+- `SYNC_CODE`: código de la tienda.
+- `FIREBASE_SERVICE_ACCOUNT` (opcional): JSON de la cuenta de servicio de Firebase. Si existe, el estado se guarda en Firestore (`tienda/estado`). Dejar las reglas de Firestore cerradas (`allow read, write: if false;`), porque el servidor entra con la cuenta de servicio.
+- `BLOB_READ_WRITE_TOKEN`: si no hay Firebase, se usa Vercel Blob.

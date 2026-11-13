@@ -315,6 +315,18 @@ tr:last-child td{border-bottom:0}
 .topout{display:flex;align-items:center;gap:6px;border:1px solid var(--red);color:var(--red);background:none;border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;flex:none;margin-left:12px}
 .topout:hover{background:var(--red-soft)}
 @media(max-width:600px){.topout{padding:7px 10px;margin-left:8px}.top .clock small#dt{display:none}}
+
+.ov{grid-template-columns:minmax(0,1fr)!important}
+.mbox{min-width:0;max-width:100%;box-sizing:border-box}
+.mbox input[type=file]{min-width:0;width:100%;font-size:13px}
+.mbox .ex,.mbox .hint,.mbox .live{overflow-wrap:anywhere}
+.mbox.sheet{padding:0!important;gap:0!important;overflow:hidden!important;max-height:min(92vh,100%)!important;width:min(520px,100%)!important;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.sheet .mh{padding:14px 18px;border-bottom:1px solid var(--line);flex:none;background:var(--bg)}
+.sheet .mh h3{margin:0;font-family:var(--display);font-weight:400;font-size:22px}
+.sheet .mbody{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 18px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.sheet .mfoot{flex:none;padding:12px 18px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg);display:flex;gap:10px}
+.sheet .mfoot>*{flex:1;margin:0}.sheet .mfoot .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+@media(max-width:700px){.ov{padding:0!important;place-items:end center!important}.mbox.sheet{width:100%!important;max-height:94%!important;border-radius:18px 18px 0 0;border-bottom:0}.mbox:not(.sheet){width:calc(100% - 24px)!important;margin:12px}}
 .bnav{display:none}
 @media (max-width:900px){
   .app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
@@ -389,6 +401,9 @@ html.mw600 .cday .cv{font-size:11px}
 html.mw600 #calc .kpis .kpi:last-child:nth-child(odd){grid-column:1/-1}
 html.mw600 .topout{padding:7px 10px;margin-left:8px}
 html.mw600 .top .clock small#dt{display:none}
+html.mw700 .ov{padding:0!important;place-items:end center!important}
+html.mw700 .mbox.sheet{width:100%!important;max-height:94%!important;border-radius:18px 18px 0 0;border-bottom:0}
+html.mw700 .mbox:not(.sheet){width:calc(100% - 24px)!important;margin:12px}
 html.mw900 .app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
 html.mw900 .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--card);border-top:1px solid var(--line);padding:6px 6px max(6px,env(safe-area-inset-bottom,0px));justify-content:space-around;box-shadow:0 -6px 24px rgba(0,0,0,.06)}
 html.mw900 .bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--muted);font-size:11px;padding:6px 2px;border-radius:12px;min-width:0}
@@ -1492,7 +1507,7 @@ $("cat-q").oninput=function(){CATQ=this.value;drawCatalog()};
 $("cat-chips").onclick=function(e){var b=e.target.closest("[data-cc]");if(b){CATC=b.getAttribute("data-cc");drawCatalog()}};
 
 /* ---------- menú: actualizaciones, APK y versión ---------- */
-var APP_VER="c59f6be9";
+var APP_VER="2277935a";
 (function(){var web=/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname);if($("appver"))$("appver").textContent="Versión "+APP_VER;if($("apk-menu")&&!web)$("apk-menu").hidden=true;
  if($("apk-menu"))$("apk-menu").addEventListener("click",function(){setTimeout(closeMenu,200)});
  $("up-check").onclick=async function(){closeMenu();toast("Buscando actualizaciones...");
@@ -1617,6 +1632,17 @@ function cloudCard(){return '<div class="card"><div class="ch"><h2>Nube (misma i
 syBadge();if(SY.on)setTimeout(syPull,1500);
 
 var _hm=/^#nube=([A-Za-z0-9-]+)/.exec(location.hash||"");if(_hm){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(!SY.on)setTimeout(function(){cloudModal();$("cl-code").value=_hm[1]},500)}
+
+/* ---------- ventanas con título fijo, campos que suben y bajan, y botón fijo abajo ---------- */
+function sheetify(m){if(!m||m.querySelector("#rc")||!m.querySelector("input,select,textarea"))return;
+ var head=null,i;for(i=0;i<m.children.length;i++){if(m.children[i].classList.contains("mh")){head=m.children[i];break}}if(!head)return;
+ var acts=[];Array.prototype.forEach.call(m.querySelectorAll("button"),function(b){if(head.contains(b))return;var n=b.parentNode&&b.parentNode.classList.contains("grid2")?b.parentNode:b;if(n===b&&!b.classList.contains("big"))return;if(acts.indexOf(n)<0)acts.push(n)});
+ var foot=null;if(acts.length)foot=acts[acts.length-1];
+ var body=document.createElement("div");body.className="mbody";
+ Array.prototype.slice.call(m.children).forEach(function(c){if(c!==head)body.appendChild(c)});
+ var f=document.createElement("div");f.className="mfoot";if(foot&&body.contains(foot)){foot.parentNode.removeChild(foot);f.appendChild(foot)}
+ m.appendChild(body);if(f.children.length)m.appendChild(f);m.classList.add("sheet");body.scrollTop=0}
+var _modal0=modal;modal=function(html,wide){_modal0(html,wide);try{sheetify($("mbox"))}catch(e){}};
 
 Array.prototype.forEach.call(document.querySelectorAll("img[data-logo]"),function(i){i.src=LOGO_URI});
 

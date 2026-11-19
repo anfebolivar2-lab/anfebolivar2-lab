@@ -138,3 +138,24 @@ importante del proyecto y el grafo que usan los asistentes.
 
 Ojo: el paquete oficial es `graphifyy`, con doble y. Otros paquetes con nombre parecido no son del
 mismo equipo. Repo oficial: github.com/Graphify-Labs/graphify
+
+---
+
+## Dejarlo guardado en este repo (para usarlo cuando lo necesites)
+
+Este repo ya trae todo lo que se puede guardar:
+
+| Qué | Dónde | Cómo se activa |
+|---|---|---|
+| 283 agentes de The Agency | `.claude/agents/` | Se cargan solos al abrir el repo en Claude Code |
+| Plugin de Codex | `.claude/settings.json` | Claude Code te ofrece instalarlo al confiar en el proyecto |
+| Codex CLI y Graphify | `scripts/setup-herramientas.sh` | Corrés `bash scripts/setup-herramientas.sh` una vez |
+
+Lo único que no se puede guardar es tu sesión de ChatGPT: la primera vez en cada computadora hay que
+correr `!codex login` dentro de Claude Code.
+
+Pasos en una computadora nueva:
+1. Cloná el repo y abrilo en Claude Code. Aceptá instalar el plugin de Codex si te lo pide.
+2. `bash scripts/setup-herramientas.sh`
+3. `!codex login` y entrá con ChatGPT.
+4. `/codex:setup` para comprobar.

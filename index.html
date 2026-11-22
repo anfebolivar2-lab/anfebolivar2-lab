@@ -750,7 +750,7 @@ function closeModal(){$("ov").hidden=true;$("mbox").innerHTML="";document.body.c
 $("ov").onclick=function(e){if(e.target===this||e.target.closest("[data-close]"))closeModal()};
 document.addEventListener("keydown",function(e){if(e.key==="Escape"){if(!$("ov").hidden)closeModal();else closeMenu()}});
 /* ---------- tienda (venta) ---------- */
-function thumb(x){var s=x.img||IMG[x.id];return '<div class="th'+(s?'':' nof')+'" style="background:'+x.bg+'">'+(s?'<img alt="" src="'+s+'">':'<span>Sin foto</span>')+'</div>'}
+function thumb(x){var s=x.img||IMG[x.id],bg=typeof x.bg==="string"&&/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(x.bg)?x.bg:"#eee";return '<div class="th'+(s?'':' nof')+'" style="background:'+esc(bg)+'">'+(s?'<img alt="" src="'+esc(s)+'">':'<span>Sin foto</span>')+'</div>'}
 function cats(){return S.items.map(function(x){return x.c}).filter(function(v,i,a){return a.indexOf(v)===i})}
 function inCart(id){var l=cart.filter(function(c){return c.id===id})[0];return l?l.q:0}
 function drawPOS(){var c=["Todos"].concat(cats());if(c.indexOf(cat)<0)cat="Todos";
@@ -1515,18 +1515,18 @@ var LOGO_URI="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwQDAwQ
 /* ---------- catálogo para clientes ---------- */
 var CATQ="",CATC="Todos";
 var CATR=null,CATL=false;
-function catItems(){return CATR?CATR.items.map(function(x){return {id:x.id,n:x.n,c:x.c,p:x.p,m:x.m,mq:x.mq,mp:x.mp,stock:x.ok?1:0,bg:x.bg,fg:x.fg,img:x.img||""}}):S.items}
+function catItems(){return CATR?CATR.items.map(function(x){return {id:x.id,n:x.n,c:x.c,p:x.p,m:x.m,mq:x.mq,mp:x.mp,stock:x.ok?1:0,bg:x.bg,fg:x.fg,img:x.img||""}}):[]}
 function drawCatalog(){var all=catItems(),cs=["Todos"],q=norm(CATQ.trim());all.forEach(function(x){if(cs.indexOf(x.c)<0)cs.push(x.c)});
  var l=all.filter(function(x){return(CATC==="Todos"||x.c===CATC)&&(!q||norm(x.n+" "+x.c).indexOf(q)>=0)});
  $("cat-chips").innerHTML=cs.map(function(c){return '<button class="fch" data-cc="'+esc(c)+'" aria-pressed="'+(c===CATC)+'">'+esc(c)+'</button>'}).join("");
- $("cat-note").textContent=CATL?"Cargando precios...":(CATR?"":"Estos productos son los guardados en este celular. Conecta este celular a la nube para que el catálogo muestre los mismos precios en cualquier celular.");
- $("cat-grid").innerHTML=CATL?'':(l.length?l.map(function(x){var pk=x.m==="pack"&&x.mq>1&&x.mp>0?'Pack x'+x.mq+': '+cop(x.mp):x.m==="mayor"&&x.mq>1&&x.mp>0?'Desde '+x.mq+' und: '+cop(x.mp)+' c/u':'';
+ $("cat-note").textContent=CATL?"Cargando precios...":(CATR?"":"No se pudo cargar el catálogo");
+ $("cat-grid").innerHTML=CATL||!CATR?'':(l.length?l.map(function(x){var pk=x.m==="pack"&&x.mq>1&&x.mp>0?'Pack x'+x.mq+': '+cop(x.mp):x.m==="mayor"&&x.mq>1&&x.mp>0?'Desde '+x.mq+' und: '+cop(x.mp)+' c/u':'';
   return '<div class="cp">'+thumb(x)+'<b>'+esc(x.n)+'</b><span class="pr">'+cop(x.p)+'</span>'+(pk?'<small>'+esc(pk)+'</small>':'')+'<small>'+(x.stock>0?'Disponible':'Agotado')+'</small></div>'}).join(""):'<p class="empty">No hay productos con ese nombre.</p>');
  var wa=$("cat-wa"),tel=String((CATR&&CATR.wa)||S.settings.wa||"").replace(/\D/g,"");wa.hidden=!tel;if(tel)wa.href=waLink("Hola, quiero hacer un pedido en "+((CATR&&CATR.store)||S.settings.store)+".",tel)}
 function loadCat(){var web=/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname);if(!web){CATR=null;CATL=false;drawCatalog();return}CATL=true;drawCatalog();
  var done=false,fin=function(r){if(done)return;done=true;CATR=r;CATL=false;if(!$("catv").hidden)drawCatalog()};
  setTimeout(function(){fin(null)},6000);
- fetch("/api/catalog",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){fin(j&&j.items&&j.items.length?j:null)}).catch(function(){fin(null)})}
+ fetch("/api/catalog",{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(j){fin(j&&Array.isArray(j.items)&&j.items.length?j:null)}).catch(function(){fin(null)})}
 function showCat(on){$("catv").hidden=!on;$("login").hidden=on;if(on){window.scrollTo(0,0);loadCat()}}
 $("open-cat").onclick=$("top-cat").onclick=function(){showCat(true)};
 $("cat-login").onclick=$("top-login").onclick=function(){showCat(false);var p=$("pin");if(p)p.focus()};

@@ -348,7 +348,7 @@ if(!S||!S.items)S=seed();
 S.settings=Object.assign({wa:"",free:150000,ship:12000},S.settings||{});
 S.coupons=S.coupons||seed().coupons;S.fav=S.fav||[];
 S.items.forEach(function(x){if(!x.ds&&DS[x.id])x.ds=DS[x.id]});
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
 function find(id){return S.items.filter(function(x){return x.id==id})[0]}
 function vis(){return S.items.filter(function(x){return x.on})}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -408,7 +408,7 @@ function drawCart(){var ids=Object.keys(cart).filter(function(i){return find(i)}
  $("ship").innerHTML=!t.cnt?'Envío gratis desde '+cop(S.settings.free)+'.':(left>0?'Te faltan <b>'+cop(left)+'</b> para el envío gratis a domicilio.':'Tienes envío gratis a domicilio.')+'<div class="meter"><i style="width:'+Math.min(100,t.base/S.settings.free*100)+'%"></i></div>';
  if(!$("cv2").hidden)drawSum2()}
 function drawSum2(){var d=$("co-d").value,t=totals(d);$("sum2").innerHTML=rows(t,d);$("co-aw").hidden=d!=="dom"}
-function show(v){$("cv1").hidden=v!==1;$("cv2").hidden=v!==2;$("cv3").hidden=v!==3;$("ctitle").textContent=["","Tu carrito","Tus datos","Pedido registrado"][v]}
+function show(v,title){$("cv1").hidden=v!==1;$("cv2").hidden=v!==2;$("cv3").hidden=v!==3;$("ctitle").textContent=["","Tu carrito","Tus datos",title][v]}
 function add(i,d){var x=find(i);if(!x)return;var q=(cart[i]||0)+d;
  if(d>0&&q>x.stock){$("cnote").textContent="Solo quedan "+x.stock+" unidades de este producto.";return}
  $("cnote").textContent="";if(q<=0)delete cart[i];else cart[i]=q;drawCart()}
@@ -445,14 +445,15 @@ $("co").onsubmit=function(e){e.preventDefault();
  var t=totals(d),items=[],txt=[],lines=[];
  ids.forEach(function(i){var x=find(i),q=cart[i],lt=lineTotal(x,q);items.push({id:x.id,q:q,t:lt});txt.push(q+" × "+x.n);lines.push("• "+q+" × "+x.n+" — "+cop(lt));x.stock=Math.max(0,x.stock-q)});
  var num=S.ord++;
- S.orders.unshift({n:num,who:n,tel:tel,deliv:d,addr:d==="dom"?ad:"",notes:nt,coupon:coupon?coupon.code:"",txt:txt.join(" · "),total:t.total,st:"Nuevo",items:items});save();
+ S.orders.unshift({n:num,who:n,tel:tel,deliv:d,addr:d==="dom"?ad:"",notes:nt,coupon:coupon?coupon.code:"",txt:txt.join(" · "),total:t.total,st:"Nuevo",items:items});var saved=save();
  var msg="Hola, quiero hacer el pedido #"+num+":\n"+lines.join("\n")+"\n\nSubtotal: "+cop(t.sub)+(t.disc?"\nCupón "+coupon.code+": −"+cop(t.disc):"")+"\nEnvío: "+(d==="rec"?"recojo en la tienda":t.ship?cop(t.ship):"gratis")+"\nTotal: "+cop(t.total)+"\n\nEntrega: "+(d==="dom"?"domicilio en "+ad:"recojo en la tienda")+"\nNombre: "+n+"\nTeléfono: "+tel+(nt?"\nNotas: "+nt:"");
  var wa=S.settings.wa.replace(/\D/g,"");
- $("okt").textContent="Pedido #"+num+" registrado";
- $("okp").textContent="Total "+cop(t.total)+". Pagas al recibir o al recoger (efectivo, Nequi o datáfono). "+(wa?"Envíanos el pedido por WhatsApp para confirmarlo.":"Te contactaremos al "+tel+" para confirmarlo.");
+ var title=wa?"Pedido registrado":saved?"Pedido guardado en este dispositivo":"No se pudo guardar el pedido";
+ $("okt").textContent=wa?"Pedido #"+num+" registrado":title;
+ $("okp").textContent="Total "+cop(t.total)+". Pagas al recibir o al recoger (efectivo, Nequi o datáfono). "+(wa?"Envíanos el pedido por WhatsApp para confirmarlo.":(saved?"El pedido quedó guardado solo en este dispositivo. ":"El pedido no pudo guardarse en este dispositivo. ")+"Para confirmarlo, comunícate con la tienda.");
  $("wa").hidden=!wa;if(wa)$("wa").href="https://wa.me/"+wa+"?text="+encodeURIComponent(msg);
  cart={};coupon=null;$("cpn").value="";$("cpnmsg").textContent="";$("co").reset();$("note").textContent="";
- drawCart();drawFilters();drawGrid();show(3)};
+ drawCart();drawFilters();drawGrid();show(3,title)};
 $("okclose").onclick=function(){openC(false);show(1)};
 
 /* ---------- Administrador ---------- */

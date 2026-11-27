@@ -1,16 +1,33 @@
-# Encargo: página de un restaurante
+# Encargo: rediseño realista de restaurante.html
 
-Crea UN solo archivo nuevo: `restaurante.html` (HTML + CSS + JS mínimo inline, sin librerías externas, sin imágenes externas; usa emojis o gradientes CSS en vez de fotos).
+Edita SOLO el archivo `restaurante.html` (reemplaza su diseño actual completo). No toques ningún otro archivo, no borres nada, no hagas commits.
 
-Restaurante de ejemplo: "Sabor Huilense" (comida colombiana). Todo en español.
+Restaurante: "Sabor Huilense" (comida colombiana). Todo en español. Mantén los mismos platos, precios, horarios, dirección de ejemplo y el enlace de WhatsApp (https://wa.me/573000000000 con el mensaje prellenado que ya existe).
 
-Secciones:
-1. Portada (hero) con nombre, frase corta y botón "Reservar por WhatsApp" (enlace https://wa.me/573000000000 con mensaje prellenado).
-2. Menú con 3 categorías (Entradas, Platos fuertes, Bebidas), 3-4 platos cada una, con descripción y precio en COP.
-3. Horarios y ubicación (dirección de ejemplo).
-4. Pie de página.
+## Fotos reales (ya existen, 1920x1080, JPG)
+- `imagenes/portada.jpg`: interior del restaurante al atardecer (usar en la portada).
+- `imagenes/asado.jpg`: Asado huilense.
+- `imagenes/tamal.jpg`: Tamal huilense.
+- `imagenes/mojarra.jpg`: Mojarra frita.
+Usa rutas relativas. Pon `alt` descriptivo en español, `loading="lazy"` en las que no estén en la portada y `width`/`height` para evitar saltos de diseño. No uses el emoji ni ilustraciones CSS de antes; no uses imágenes externas.
 
-Requisitos: diseño responsive (se ve bien en celular), colores cálidos, menú de navegación fijo con enlaces a cada sección, texto con buen contraste, `<meta viewport>` y `lang="es"`.
+## Estilo (mezcla de tres ambientes)
+- Portada oscura y elegante: foto `portada.jpg` a pantalla casi completa con una capa oscura degradada para que el texto blanco/dorado se lea bien; nombre grande en serif, frase corta y botón dorado "Reservar por WhatsApp".
+- Tonos cálidos tierra (madera, terracota, dorado) en detalles y títulos.
+- Resto de la página sobre fondo claro y limpio, con fotos grandes y mucho espacio.
 
-Reglas: NO toques ningún otro archivo. No borres nada. No hagas commits.
-Prueba: verifica que el HTML sea válido y que no haya enlaces rotos entre secciones.
+## Secciones
+1. Barra de navegación fija (transparente sobre la portada, sólida al bajar; Inicio, Menú, Visítanos, Contacto).
+2. Portada.
+3. "Platos de la casa": tarjetas grandes con las 3 fotos de platos (asado, tamal, mojarra), con nombre, descripción corta y precio.
+4. Menú completo en 3 columnas (Entradas, Platos fuertes, Bebidas) como ahora, con precios en COP.
+5. Horarios y ubicación (con la dirección de ejemplo).
+6. Pie de página con botón de WhatsApp.
+
+## Requisitos
+- Responsive: se ve bien en celular (390 px) y computador (1280 px), sin scroll horizontal.
+- `lang="es"`, `<meta viewport>`, buen contraste, foco visible en enlaces, `prefers-reduced-motion` respetado si usas animaciones (mínimas).
+- Un solo archivo HTML con CSS y JS mínimo inline.
+
+## Prueba
+Verifica sintaxis con `xmllint --html --noout` y `node --check` si hay JS, que las 4 imágenes existan en las rutas usadas y que los enlaces internos (#inicio, #menu, #visita, #contacto) apunten a secciones existentes.

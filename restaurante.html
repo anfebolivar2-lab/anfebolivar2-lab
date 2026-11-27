@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sabor Huilense | Cocina colombiana</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --papel: #fff8ec;
+      --tinta: #371b17;
+      --suave: #64453b;
+      --rojo: #8a3124;
+      --oro: #ffd078;
+      --borde: #e9cdb5;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-padding-top: 8rem; }
+    body {
+      margin: 0;
+      padding-top: 4.5rem;
+      background: var(--papel);
+      color: var(--tinta);
+      font: 1rem/1.55 system-ui, sans-serif;
+    }
+
+    h1, h2, h3 { margin: 0; font-family: Georgia, serif; line-height: 1.08; }
+    h2 { font-size: clamp(2.2rem, 5vw, 3.5rem); }
+    a { color: inherit; }
+    a:focus-visible { outline: 3px solid #c06b2b; outline-offset: 4px; }
+    .contenedor { width: min(70rem, calc(100% - 2rem)); margin-inline: auto; }
+
+    .cabecera {
+      position: fixed;
+      z-index: 1;
+      inset: 0 0 auto;
+      background: var(--papel);
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .barra, nav, .pie {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem 1.5rem;
+    }
+
+    .barra { min-height: 4.5rem; }
+    .marca { font: bold 1.25rem Georgia, serif; text-decoration: none; }
+    nav a { padding-block: 0.45rem; font-size: 0.9rem; font-weight: 700; text-decoration: none; }
+    nav a:hover, .pie a:hover { text-decoration: underline; text-underline-offset: 0.25em; }
+
+    .portada {
+      background: radial-gradient(ellipse at 87% 20%, #8f3f2b, transparent 58%),
+                  linear-gradient(135deg, #411d18, #69251b);
+      color: var(--papel);
+    }
+
+    .portada-interior {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      align-items: center;
+      gap: 2rem;
+      padding-block: clamp(3.75rem, 9vw, 7rem);
+    }
+
+    .portada h1 { font-size: clamp(3.2rem, 8vw, 7rem); letter-spacing: -0.055em; }
+    .portada p { font-size: clamp(1.05rem, 2vw, 1.35rem); }
+    .boton {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.85rem 1.2rem;
+      border-radius: 0.4rem;
+      background: var(--oro);
+      color: var(--tinta);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .boton:hover { background: #ffe5a8; }
+    .boton:focus-visible, .pie a:focus-visible { outline-color: var(--oro); }
+    .ilustracion {
+      display: grid;
+      place-items: center;
+      width: min(100%, 19rem);
+      aspect-ratio: 1;
+      justify-self: end;
+      border: 1px solid #efab69;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffd078 0 54%, #df874e 55% 66%, transparent 67%);
+      font-size: clamp(4.5rem, 12vw, 8rem);
+    }
+
+    .seccion { padding-block: clamp(3rem, 7vw, 5rem); }
+    .categorias {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.75rem;
+    }
+
+    .categoria {
+      padding: 1.25rem;
+      border: 1px solid var(--borde);
+      border-top: 4px solid #b65b39;
+      border-radius: 0.6rem;
+      background: #fffdf8;
+    }
+
+    .categoria h3, .visita h3 { font-size: 1.45rem; }
+    .platos { margin: 0.5rem 0 0; padding: 0; list-style: none; }
+    .platos li { padding-block: 0.9rem; }
+    .platos li + li { border-top: 1px solid var(--borde); }
+    .plato { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.15rem 0.65rem; }
+    .precio { color: var(--rojo); font-weight: 800; white-space: nowrap; }
+    .platos p { margin: 0.3rem 0 0; color: var(--suave); }
+
+    .visita { background: #f5e2cb; }
+    .datos { display: flex; flex-wrap: wrap; gap: 1.5rem 4rem; margin-top: 1.5rem; }
+    .datos p, address { margin: 0.5rem 0 0; }
+    address { font-style: normal; }
+    footer { background: #411d18; color: var(--papel); }
+    .pie { flex-wrap: wrap; padding-block: 1.25rem; }
+    .pie p { margin: 0; }
+    .pie a { color: var(--oro); }
+
+    @media (max-width: 50rem) {
+      .categorias { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 36rem) {
+      body { padding-top: 6rem; }
+      .barra { min-height: 6rem; flex-direction: column; justify-content: center; gap: 0.35rem; }
+      nav { justify-content: center; gap: 0.7rem; }
+      .portada-interior { grid-template-columns: 1fr; }
+      .ilustracion { justify-self: start; width: 8rem; font-size: 3.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="cabecera">
+    <div class="contenedor barra">
+      <a class="marca" href="#inicio">Sabor Huilense</a>
+      <nav aria-label="Navegación principal">
+        <a href="#inicio">Inicio</a>
+        <a href="#menu">Menú</a>
+        <a href="#visita">Visítanos</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="portada" id="inicio" aria-labelledby="titulo">
+      <div class="contenedor portada-interior">
+        <div>
+          <h1 id="titulo">Sabor Huilense</h1>
+          <p>Del fogón del Huila a tu mesa.</p>
+          <a class="boton" href="https://wa.me/573000000000?text=Hola%2C%20Sabor%20Huilense.%20Quisiera%20hacer%20una%20reserva.">Reservar por WhatsApp</a>
+        </div>
+        <div class="ilustracion" aria-hidden="true">🫔</div>
+      </div>
+    </section>
+
+    <section class="seccion contenedor" id="menu" aria-labelledby="titulo-menu">
+      <h2 id="titulo-menu">Nuestro menú</h2>
+      <div class="categorias">
+        <section class="categoria">
+          <h3>Entradas</h3>
+          <ul class="platos">
+            <li>
+              <div class="plato"><strong>Bizcochos de achira</strong><span class="precio">$8.000 COP</span></div>
+              <p>Bocaditos crujientes de almidón de achira y cuajada.</p>
+            </li>
+            <li>
+              <div class="plato"><strong>Empanadas de pipián</strong><span class="precio">$12.000 COP</span></div>
+              <p>Tres empanadas de maíz rellenas de papa y maní, con ají casero.</p>
+            </li>
+            <li>
+              <div class="plato"><strong>Arepitas con hogao</strong><span class="precio">$10.000 COP</span></div>
+              <p>Arepitas de maíz doradas con guiso de tomate y cebolla.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="categoria">
+          <h3>Platos fuertes</h3>
+          <ul class="platos">
+            <li>
+              <div class="plato"><strong>Asado huilense</strong><span class="precio">$38.000 COP</span></div>
+              <p>Cerdo adobado con hierbas y especias, con yuca y arepa.</p>
+            </li>
+            <li>
+              <div class="plato"><strong>Tamal huilense</strong><span class="precio">$27.000 COP</span></div>
+              <p>Masa de maíz con cerdo, pollo y verduras, cocida en hoja de plátano.</p>
+            </li>
+            <li>
+              <div class="plato"><strong>Mojarra frita</strong><span class="precio">$34.000 COP</span></div>
+              <p>Mojarra dorada con patacones, arroz y ensalada fresca.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="categoria">
+          <h3>Bebidas</h3>
+          <ul class="platos">
+            <li>
+              <div class="plato"><strong>Jugo de cholupa</strong><span class="precio">$9.000 COP</span></div>
+              <p>Jugo fresco de cholupa, una fruta de sabor agridulce.</p>
+            </li>
+            <li>
+              <div class="plato"><strong>Aguapanela con limón</strong><span class="precio">$7.000 COP</span></div>
+              <p>Panela disuelta en agua, servida fría con limón.</p>
+            </li>
+            <li>
+              <div class="plato"><strong>Café del Huila</strong><span class="precio">$6.000 COP</span></div>
+              <p>Café filtrado de granos cultivados en el Huila.</p>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <section class="seccion visita" id="visita" aria-labelledby="titulo-visita">
+      <div class="contenedor">
+        <h2 id="titulo-visita">Horarios y ubicación</h2>
+        <div class="datos">
+          <div>
+            <h3>Horarios</h3>
+            <p>Martes a sábado, 12:00–21:00<br />Domingo, 12:00–17:00<br />Lunes cerrado</p>
+          </div>
+          <div>
+            <h3>Ubicación</h3>
+            <address>Carrera 7 #12-34, Neiva, Huila, Colombia<br />Dirección de ejemplo</address>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contacto">
+    <div class="contenedor pie">
+      <p>© <span id="anio"></span> Sabor Huilense · Neiva, Huila</p>
+      <a href="https://wa.me/573000000000?text=Hola%2C%20Sabor%20Huilense.%20Quisiera%20hacer%20una%20reserva.">Reservar por WhatsApp</a>
+    </div>
+  </footer>
+  <script>
+    document.getElementById('anio').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
